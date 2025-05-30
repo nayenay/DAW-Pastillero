@@ -1,1 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head><title>Registrar Medicamento</title></head>
+<body>
+  <h2>Registrar Medicamento</h2>
+  <input id="nombre" placeholder="Nombre del medicamento"><br>
+  <input id="horas" placeholder="Cada cuántas horas"><br>
+  <input id="noCom" placeholder="No. de compartimiento"><br>
+  <input id="dosis" placeholder="Dosis total"><br>
+  <input id="primera" placeholder="Primera toma (HH:MM)"><br>
+  <button onclick="registrarMedicamento()">Guardar</button>
+  <a href="lista.html">Ver medicamentos</a>
+
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+  <script src="firebase-config.js"></script>
+
+  <script>
+    function registrarMedicamento() {
+      const user = firebase.auth().currentUser;
+      if (!user) return alert("No autenticado");
+
+      const data = {
+        nombre: nombre.value,
+        horas: parseInt(horas.value),
+        noCom: parseInt(noCom.value),
+        dosis: parseInt(dosis.value),
+        primeraToma: primera.value,
+        ultimaToma: primera.value
+      };
+
+      const ref = firebase.database().ref("Usuarios/" + user.email.replace(".", "_") + "/medicamentos/" + data.nombre);
+      ref.set(data).then(() => alert("Registrado"));
+    }
+
+    firebase.auth().onAuthStateChanged(user => {
+      if (!user) window.location.href = "index.html";
+    });
+  </script>
+</body>
+</html>
 
