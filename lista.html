@@ -1,1 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head><title>Mis Medicamentos</title></head>
+<body>
+  <h2>Medicamentos Registrados</h2>
+  <ul id="lista"></ul>
+  <a href="registro.html">Registrar nuevo</a>
+
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+  <script src="firebase-config.js"></script>
+
+  <script>
+    firebase.auth().onAuthStateChanged(user => {
+      if (!user) return window.location.href = "index.html";
+
+      const lista = document.getElementById("lista");
+      const ref = firebase.database().ref("Usuarios/" + user.email.replace(".", "_") + "/medicamentos");
+
+      ref.once("value", snapshot => {
+        snapshot.forEach(child => {
+          const datos = child.val();
+          const li = document.createElement("li");
+          li.textContent = `${datos.nombre} - cada ${datos.horas} hrs - compartimiento ${datos.noCom}`;
+          lista.appendChild(li);
+        });
+      });
+    });
+  </script>
+</body>
+</html>
 
