@@ -9,8 +9,9 @@
   <input type="password" id="password" placeholder="Contraseña"><br>
   <button id="loginBtn">Iniciar Sesión</button>
   <button id="registerBtn">Registrarse</button>
-
-  <script type="module" src="main.js">
+<!-- aquí está el bug, todo lo que está dentro de <script> no se está ejecutando -->
+<!-- module indica que debe ser tratado como módulo de JavaScript, el src=main.js indica la ruta al archivo javascript esterno que tenga la logica principal -->
+  <script type="module" src="main.js"> 
     import { auth } from './firebase-config.js';
     import { signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js';
 
