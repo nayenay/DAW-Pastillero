@@ -1,33 +1,37 @@
 <!DOCTYPE html>
 <html>
-<head><title>Mis Medicamentos</title></head>
+<head><title>Lista</title></head>
 <body>
-  <h2>Medicamentos Registrados</h2>
+  <h2>Medicamentos registrados</h2>
   <ul id="lista"></ul>
   <a href="registro.html">Registrar nuevo</a>
 
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
-  <script src="firebase-config.js"></script>
+  <script type="module">
+    import { auth, db } from './firebase-config.js';
+    import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js';
+    import { ref, get } from 'https://www.gstatic.com/firebasejs/9.22.2/firebase-database.js';
 
-  <script>
-    firebase.auth().onAuthStateChanged(user => {
+    const lista = document.getElementById("lista");
+
+    onAuthStateChanged(auth, (user) => {
       if (!user) return window.location.href = "index.html";
 
-      const lista = document.getElementById("lista");
-      const ref = firebase.database().ref("Usuarios/" + user.email.replace(".", "_") + "/medicamentos");
+      const correoId = user.email.replace(".", "_");
+      const medRef = ref(db, "Usuarios/" + correoId + "/medicamentos");
 
-      ref.once("value", snapshot => {
-        snapshot.forEach(child => {
-          const datos = child.val();
-          const li = document.createElement("li");
-          li.textContent = `${datos.nombre} - cada ${datos.horas} hrs - compartimiento ${datos.noCom}`;
-          lista.appendChild(li);
-        });
+      get(medRef).then(snapshot => {
+        if (snapshot.exists()) {
+          const datos = snapshot.val();
+          for (let med in datos) {
+            const li = document.createElement("li");
+            li.textContent = `${datos[med].nombre} - cada ${datos[med].horas} hrs - compartimiento ${datos[med].noCom}`;
+            lista.appendChild(li);
+          }
+        } else {
+          lista.innerHTML = "<li>No hay medicamentos registrados.</li>";
+        }
       });
     });
   </script>
 </body>
 </html>
-
