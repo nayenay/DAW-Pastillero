@@ -1,37 +1,36 @@
 <!DOCTYPE html>
 <html>
-<head><title>Login</title></head>
+<head>
+  <title>Login</title>
+</head>
 <body>
   <h2>Iniciar sesión</h2>
-  <input id="email" type="email" placeholder="Correo"><br>
-  <input id="password" type="password" placeholder="Contraseña"><br>
-  <button onclick="login()">Ingresar</button>
-  <button onclick="register()">Registrarse</button>
+  <input type="email" id="email" placeholder="Correo"><br>
+  <input type="password" id="password" placeholder="Contraseña"><br>
+  <button id="loginBtn">Iniciar Sesión</button>
+  <button id="registerBtn">Registrarse</button>
 
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
-  <script src="firebase-config.js"></script>
+  <script type="module">
+    import { auth } from './firebase-config.js';
+    import { signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js';
 
-  <script>
-    function login() {
-      const email = email.value;
-      const password = password.value;
+    document.getElementById("loginBtn").addEventListener("click", () => {
+      const email = document.getElementById("email").value;
+      const password = document.getElementById("password").value;
 
-      firebase.auth().signInWithEmailAndPassword(email, password)
+      signInWithEmailAndPassword(auth, email, password)
         .then(() => window.location.href = "registro.html")
-        .catch(err => alert("Error: " + err.message));
-    }
+        .catch(err => alert("Error al iniciar sesión: " + err.message));
+    });
 
-    function register() {
-      const email = email.value;
-      const password = password.value;
+    document.getElementById("registerBtn").addEventListener("click", () => {
+      const email = document.getElementById("email").value;
+      const password = document.getElementById("password").value;
 
-      firebase.auth().createUserWithEmailAndPassword(email, password)
-        .then(() => alert("Registrado"))
-        .catch(err => alert("Error: " + err.message));
-    }
+      createUserWithEmailAndPassword(auth, email, password)
+        .then(() => alert("Registrado con éxito"))
+        .catch(err => alert("Error al registrarse: " + err.message));
+    });
   </script>
 </body>
 </html>
-
