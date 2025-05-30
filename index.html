@@ -1,1 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head><title>Login</title></head>
+<body>
+  <h2>Iniciar sesión</h2>
+  <input id="email" type="email" placeholder="Correo"><br>
+  <input id="password" type="password" placeholder="Contraseña"><br>
+  <button onclick="login()">Ingresar</button>
+  <button onclick="register()">Registrarse</button>
+
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+  <script src="firebase-config.js"></script>
+
+  <script>
+    function login() {
+      const email = email.value;
+      const password = password.value;
+
+      firebase.auth().signInWithEmailAndPassword(email, password)
+        .then(() => window.location.href = "registro.html")
+        .catch(err => alert("Error: " + err.message));
+    }
+
+    function register() {
+      const email = email.value;
+      const password = password.value;
+
+      firebase.auth().createUserWithEmailAndPassword(email, password)
+        .then(() => alert("Registrado"))
+        .catch(err => alert("Error: " + err.message));
+    }
+  </script>
+</body>
+</html>
 
