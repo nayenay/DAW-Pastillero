@@ -1,37 +1,14 @@
 <!DOCTYPE html>
 <html>
-<head><title>Lista</title></head>
+<head><title>Lista</title>
+</head>
 <body>
   <h2>Medicamentos registrados</h2>
   <ul id="lista"></ul>
   <a href="registro.html">Registrar nuevo</a>
 
-  <script type="module" src="main.js">
-    import { auth, db } from './firebase-config.js';
-    import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js';
-    import { ref, get } from 'https://www.gstatic.com/firebasejs/9.22.2/firebase-database.js';
+  <p id="scriptStatusLista" style="color: blue; font-weight: bold;"></p>
 
-    const lista = document.getElementById("lista");
-
-    onAuthStateChanged(auth, (user) => {
-      if (!user) return window.location.href = "index.html";
-
-      const correoId = user.email.replace(".", "_");
-      const medRef = ref(db, "Usuarios/" + correoId + "/medicamentos");
-
-      get(medRef).then(snapshot => {
-        if (snapshot.exists()) {
-          const datos = snapshot.val();
-          for (let med in datos) {
-            const li = document.createElement("li");
-            li.textContent = `${datos[med].nombre} - cada ${datos[med].horas} hrs - compartimiento ${datos[med].noCom}`;
-            lista.appendChild(li);
-          }
-        } else {
-          lista.innerHTML = "<li>No hay medicamentos registrados.</li>";
-        }
-      });
-    });
-  </script>
+  <script type="module" src="script.js"></script>
 </body>
 </html>
