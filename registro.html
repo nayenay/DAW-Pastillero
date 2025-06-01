@@ -2,47 +2,18 @@
 <html>
 <head>
   <title>Registrar Medicamento</title>
-</head>
+  </head>
 <body>
   <h2>Registrar Medicamento</h2>
   <input id="nombre" placeholder="Nombre del medicamento"><br>
   <input id="horas" placeholder="Cada cuántas horas"><br>
   <input id="noCom" placeholder="No. de compartimiento"><br>
   <input id="dosis" placeholder="Dosis total"><br>
-  <input id="primera" placeholder="Primera toma (HH:MM)"><br>
-  <button id="guardarBtn">Guardar</button>
+  <input id="primera" placeholder="Primera toma (HH:MM)" type="time"><br> <button id="guardarBtn">Guardar</button>
   <a href="lista.html">Ver medicamentos</a>
 
-  <script type="module" src="main.js">
-    import { auth, db } from './firebase-config.js';
-    import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js';
-    import { ref, set } from 'https://www.gstatic.com/firebasejs/9.22.2/firebase-database.js';
+  <p id="scriptStatusRegistro" style="color: blue; font-weight: bold;"></p>
 
-    onAuthStateChanged(auth, (user) => {
-      if (!user) window.location.href = "index.html";
-
-      document.getElementById("guardarBtn").addEventListener("click", () => {
-        const nombre = document.getElementById("nombre").value;
-        const horas = parseInt(document.getElementById("horas").value);
-        const noCom = parseInt(document.getElementById("noCom").value);
-        const dosis = parseInt(document.getElementById("dosis").value);
-        const primera = document.getElementById("primera").value;
-
-        const data = {
-          nombre,
-          horas,
-          noCom,
-          dosis,
-          primeraToma: primera,
-          ultimaToma: primera
-        };
-
-        const correoId = user.email.replace(".", "_");
-        set(ref(db, "Usuarios/" + WKiH1ESIcCgYgIUjyBKcfpgdAnu1 + "/medicamentos/" + nombre), data)
-          .then(() => alert("Medicamento guardado"))
-          .catch(err => alert("Error: " + err.message));
-      });
-    });
-  </script>
+  <script type="module" src="script.js"></script>
 </body>
 </html>
