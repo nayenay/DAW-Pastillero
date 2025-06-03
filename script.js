@@ -168,8 +168,8 @@ document.addEventListener('DOMContentLoaded', () => {
           const errFecha = document.getElementById("msj-fecha");
           const errHoraPrimera = document.getElementById("msj-horaP");
           
-          [nombre, horas, noCom, dosis, fecha, hora].forEach(e => e.classList.remove("error"));
-          [msjNombre, msjHoras, msjCom, msjDosis, msjFecha, msjHora].forEach(e => e.textContent = "");
+          [nombre, horas, noCom, dosisTotal, fechaPrimera, horaPrimera].forEach(e => e.classList.remove("error"));
+          [errNombre, errHoras, errNoCom, errDosis, errFecha, errHoraPrimera].forEach(e => e.textContent = "");
 
           if (nombre.value.trim()===""){            
             nombre.classList.add("incorrecto")
@@ -226,8 +226,8 @@ document.addEventListener('DOMContentLoaded', () => {
           // o al menos ser consistente. Aquí usaremos el método setUTCFullYear, etc.
           // para construirlo en UTC y luego formatearlo.
 
-          const [year, month, day] = fechaPrimeraStr.split('-').map(Number);
-          const [hour, minute] = horaPrimeraStr.split(':').map(Number);
+          const [year, month, day] = fechaPrimera.value.split('-').map(Number);
+          const [hour, minute] = horaPrimera.value.split(':').map(Number);
 
           // Crear una fecha para la primera toma.
           // Ojo: month - 1 porque los meses en JavaScript son 0-indexados (0=Enero, 11=Diciembre)
