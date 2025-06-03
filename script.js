@@ -142,7 +142,7 @@ document.addEventListener('DOMContentLoaded', () => {
           };
 
           try {
-            await set(ref(db, "Usuarios/" + userId + "/medicamentos/" + nombre), data);
+            await set(ref(db, "DataBase/" + userId + "/Medicamentos/" + nombre), data);
             alert("Medicamento guardado con éxito!");
             if (scriptStatusRegistro) {
               scriptStatusRegistro.textContent = "Medicamento guardado!";
@@ -183,7 +183,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       const userId = user.uid;
 
-      const medRef = ref(db, "Usuarios/" + userId + "/medicamentos");
+      const medRef = ref(db, "DataBase/" + userId + "/Medicamentos");
 
       get(medRef).then(snapshot => {
         if (snapshot.exists()) {
