@@ -28,6 +28,7 @@ body {
 }
 
 .msj-error{
+  display: none;
   color:red;
   font-size: 15px;
   text-align: center;

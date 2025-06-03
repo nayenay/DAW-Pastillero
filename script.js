@@ -170,52 +170,54 @@ document.addEventListener('DOMContentLoaded', () => {
           
           [nombre, horas, noCom, dosisTotal, fechaPrimera, horaPrimera].forEach(e => e.classList.remove("incorrecto"));
           [errNombre, errHoras, errNoCom, errDosis, errFecha, errHoraPrimera].forEach(e => e.textContent = "");
+          [errNombre, errHoras, errNoCom, errDosis, errFecha, errHoraPrimera].forEach(e => e.style.display = "none");
 
           if (nombre.value.trim()===""){            
-            nombre.classList.add("incorrecto")
-            errNombre.textContent = "Este campo es obligatorio"
+            nombre.classList.add("incorrecto");
+            errNombre.textContent = "Este campo es obligatorio";
+            errNombre.style.display = "block"
             return;
           }
 
           if (horas.value.trim()===""){            
-            horas.classList.add("incorrecto")
-            errHoras.textContent = "Este campo es obligatorio"    
+            horas.classList.add("incorrecto");
+            errHoras.textContent = "Este campo es obligatorio";
             return;        
           }else if (isNaN(horas.value) || parseInt(horas.value) <= 0){
-            horas.classList.add("incorrecto")
-            errHoras.textContent = "Debe ingresar un número válido de horas"
+            horas.classList.add("incorrecto");
+            errHoras.textContent = "Debe ingresar un número válido de horas";
             return;
           }
           
           if (noCom.value.trim()===""){            
-            noCom.classList.add("incorrecto")
-            errNoCom.textContent = "Este campo es obligatorio"     
+            noCom.classList.add("incorrecto");
+            errNoCom.textContent = "Este campo es obligatorio"; 
             return;       
           }else if (isNaN(noCom.value) || parseInt(noCom.value) <= 0){
-            noCom.classList.add("incorrecto")
-            errHoras.textContent = "Debe ingresar un número válido"
+            noCom.classList.add("incorrecto");
+            errHoras.textContent = "Debe ingresar un número válido";
             return;
           }
 
           if (dosisTotal.value.trim()===""){            
-            dosisTotal.classList.add("incorrecto")
-            errDosis.textContent = "Este campo es obligatorio"            
+            dosisTotal.classList.add("incorrecto");
+            errDosis.textContent = "Este campo es obligatorio";         
             return;
           }else if (isNaN(dosisTotal.value) || parseInt(dosisTotal.value) <= 0){
-            dosisTotal.classList.add("incorrecto")
-            errDosis.textContent = "Debe ingresar una dosis válida"
+            dosisTotal.classList.add("incorrecto");
+            errDosis.textContent = "Debe ingresar una dosis válida";
             return;
           }
 
           if (fechaPrimera.value === ""){            
-            fechaPrimera.classList.add("incorrecto")
-            errFecha.textContent = "Seleccione una fecha"
+            fechaPrimera.classList.add("incorrecto");
+            errFecha.textContent = "Seleccione una fecha";
             return;
           }
 
           if (horaPrimera.value === ""){            
-            horaPrimera.classList.add("incorrecto")
-            errHoraPrimera.textContent = "Seleccione una hora"
+            horaPrimera.classList.add("incorrecto");
+            errHoraPrimera.textContent = "Seleccione una hora";
             return;
           }
  
