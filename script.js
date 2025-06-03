@@ -207,13 +207,13 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
           }
 
-          if (fechaPrimera === ""){            
+          if (fechaPrimera.value === ""){            
             fechaPrimera.classList.add("incorrecto")
             errFecha.textContent = "Seleccione una fecha"
             return;
           }
 
-          if (horaPrimera){            
+          if (horaPrimera.value === ""){            
             horaPrimera.classList.add("incorrecto")
             errHoraPrimera.textContent = "Seleccione una hora"
             return;

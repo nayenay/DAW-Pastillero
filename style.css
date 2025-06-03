@@ -19,23 +19,31 @@ body {
 
   padding: 30px;
   margin-block: 20px;
+  margin-inline: 50px;
 }
 
 .incorrecto{
-  border-color: red;
-  background-color: rgb(255, 178, 169);
+  border-color: rgb(255, 0, 0);
+  background-color: rgb(255, 221, 217);
+  border-width: 3px;
 }
+
 .msj-error{
   color:red;
   font-size: 15px;
+  text-align: center;
+  background-color: rgba(255, 187, 179, 0.695);
+  padding-block: 5px;
+  margin-bottom: 10px;
 }
 
 /* Encabezados */
 h2 {
   font-family: 'Lexend';
-  color: #007BFF;
+  color: #dfc2ff;
   text-align: center;
   margin-bottom: 20px;
+  font-size: 35px;
 }
 
 label{
@@ -59,7 +67,7 @@ input {
   box-sizing: border-box;
 }
 
-input:active{
+input:focus{
   box-shadow: 0 0 10px #007BFF
 }
 
