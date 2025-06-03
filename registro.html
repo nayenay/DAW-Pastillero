@@ -8,22 +8,31 @@
   <h2>Registrar Medicamento</h2>
   <div class="container">
     <input id="nombre" placeholder="Nombre del medicamento"><br>
-    <input id="horas" placeholder="Cada cuántas horas"><br>
+    <div class="msj-error" id="msj-nombre"></div>
+    
+    <input id="horas" placeholder="Cada cuántas horas"><br>   
+    <div class="msj-error" id="msj-horas"></div>
+
     <input id="noCom" placeholder="No. de compartimiento"><br>
-    <input id="dosis" placeholder="Dosis total"><br>
-    
+    <div class="msj-error" id="msj-compartimiento"></div>
+
+    <input id="dosis" placeholder="Dosis total"><br>    
+    <div class="msj-error" id="msj-dosis"></div>
+
     <label for="fechaPrimera">Fecha de primera toma:</label>
-    <input type="date" id="fechaPrimera"><br> 
-    
+    <input type="date" id="fechaPrimera"><br>    
+    <div class="msj-error" id="msj-fecha"></div>
+
     <label for="horaPrimera">Hora de primera toma (HH:MM):</label>
-    <input type="time" id="horaPrimera"><br> 
+    <input type="time" id="horaPrimera"><br>
+    <div class="msj-error" id="msj-horaP"></div>
     
     <button id="guardarBtn">Guardar</button>
     <a href="lista.html">Ver medicamentos</a>
 
     <p id="scriptStatusRegistro" style="color: blue; font-weight: bold;"></p>
 
-    <script type="module" src="script.js"></script>
   </div>
+  <script type="module" src="script.js"></script>
 </body>
 </html>

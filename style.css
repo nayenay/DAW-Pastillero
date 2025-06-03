@@ -2,7 +2,7 @@
 body {
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif,Lexend-Medium;
   background-color: #0c2242;
-  background-image: "fonditoazuldegradadouwu.jpg";
+  background-image: url("fonditoazuldegradadouwu.jpg");
   color: #333;
   margin: 0;
   padding: 20px;
@@ -15,9 +15,20 @@ body {
 
 .container{
   background-color: rgba(85, 198, 255, 0.642);
-  align-items: cener;
+  align-items: center;
   padding: 30px;
+  margin-block: 20px;
 }
+
+.incorrecto{
+  border-color: red;
+  background-color: rgb(255, 178, 169);
+}
+.msj-error{
+  color:red;
+  font-size: 15px;
+}
+
 /* Encabezados */
 h2 {
   color: #007BFF;

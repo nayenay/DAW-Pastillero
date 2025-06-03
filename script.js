@@ -136,22 +136,87 @@ document.addEventListener('DOMContentLoaded', () => {
         guardarBtn.addEventListener("click", async () => {
           const userId = user.uid;
 
-          const nombre = document.getElementById("nombre").value;
+          /*const nombre = document.getElementById("nombre").value;
           const horas = parseInt(document.getElementById("horas").value); // Intervalo en horas
           const noCom = parseInt(document.getElementById("noCom").value);
           const dosisTotal = parseInt(document.getElementById("dosis").value); // Cantidad total de dosis
           const fechaPrimeraStr = document.getElementById("fechaPrimera").value; // 'YYYY-MM-DD'
-          const horaPrimeraStr = document.getElementById("horaPrimera").value;   // 'HH:MM'
-
-          // Validaciones
-          if (!nombre || isNaN(horas) || isNaN(noCom) || isNaN(dosisTotal) || !fechaPrimeraStr || !horaPrimeraStr) {
+          const horaPrimeraStr = document.getElementById("horaPrimera").value;   // 'HH:MM'*/
+          
+          /*if (!nombre || isNaN(horas) || isNaN(noCom) || isNaN(dosisTotal) || !fechaPrimeraStr || !horaPrimeraStr) {
               alert("Por favor, rellena todos los campos correctamente.");
               return;
           }
+
           if (dosisTotal <= 0 || horas <= 0) {
               alert("Las dosis total y el intervalo de horas deben ser mayores a cero.");
               return;
+          }*/
+
+          // VALIDACIONES
+          const nombre = document.getElementById("nombre");
+          const horas = document.getElementById("horas"); // Intervalo en horas
+          const noCom = document.getElementById("noCom");
+          const dosisTotal = document.getElementById("dosis"); // Cantidad total de dosis
+          const fechaPrimera = document.getElementById("fechaPrimera"); // 'YYYY-MM-DD'
+          const horaPrimera = document.getElementById("horaPrimera");   // 'HH:MM'
+
+          const errNombre = document.getElementById("msj-nombre");
+          const errHoras = document.getElementById("msj-horas");
+          const errNoCom = document.getElementById("msj-noCom");
+          const errDosis = document.getElementById("msj-dosis");
+          const errFecha = document.getElementById("msj-fecha");
+          const errHoraPrimera = document.getElementById("msj-horaP");
+          
+
+          if (nombre.value.trim()===""){            
+            nombre.classList.add("incorrecto")
+            errNombre.textContent = "Este campo es obligatorio"
+            return;
           }
+
+          if (horas.value.trim()===""){            
+            horas.classList.add("incorrecto")
+            errHoras.textContent = "Este campo es obligatorio"    
+            return;        
+          }else if (isNaN(horas.value) || parseInt(horas.value) <= 0){
+            horas.classList.add("incorrecto")
+            errHoras.textContent = "Debe ingresar un número válido de horas"
+            return;
+          }
+          
+          if (noCom.value.trim()===""){            
+            noCom.classList.add("incorrecto")
+            errNoCom.textContent = "Este campo es obligatorio"     
+            return;       
+          }else if (isNaN(noCom.value) || parseInt(noCom.value) <= 0){
+            noCom.classList.add("incorrecto")
+            errHoras.textContent = "Debe ingresar un número válido"
+            return;
+          }
+
+          if (dosisTotal.value.trim()===""){            
+            dosisTotal.classList.add("incorrecto")
+            errDosis.textContent = "Este campo es obligatorio"            
+            return;
+          }else if (isNaN(dosisTotal.value) || parseInt(dosisTotal.value) <= 0){
+            dosisTotal.classList.add("incorrecto")
+            errDosis.textContent = "Debe ingresar una dosis válida"
+            return;
+          }
+
+          if (fechaPrimera === ""){            
+            fechaPrimera.classList.add("incorrecto")
+            errFecha.textContent = "Seleccione una fecha"
+            return;
+          }
+
+          if (horaPrimera){            
+            horaPrimera.classList.add("incorrecto")
+            errHoraPrimera.textContent = "Seleccione una hora"
+            return;
+          }
+ 
 
           // Construir el objeto Date para la primera toma
           // La zona horaria 'Z' al final del formato ISO 8601 indica UTC.
