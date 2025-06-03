@@ -1,7 +1,8 @@
 /* Estilos globales */
 body {
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif,Lexend;
-  background-color: #f4f6f9;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif,Lexend-Medium;
+  background-color: #0c2242;
+  background-image: "fonditoazuldegradadouwu.jpg";
   color: #333;
   margin: 0;
   padding: 20px;
@@ -12,12 +13,18 @@ body {
   src: url('Lexend-Medium.ttf') format('truetype');
 }
 
+.container{
+  background-color: rgba(85, 198, 255, 0.642);
+  align-items: cener;
+  padding: 30px;
+}
 /* Encabezados */
 h2 {
   color: #007BFF;
   text-align: center;
   margin-bottom: 20px;
 }
+
 
 /* Inputs y botones */
 input {
@@ -32,7 +39,12 @@ input {
   box-sizing: border-box;
 }
 
+input:active{
+  box-shadow: 0 0 10px #007BFF
+}
+
 button {
+  font-family: 'Lexend';
   display: block;
   width: 90%;
   max-width: 400px;
@@ -52,6 +64,7 @@ button:hover {
   border-radius: 3px;
 	border: 2px solid #ffffff;
 	box-shadow: 0 0 10px #a2d8ff ;
+  scale: 1.15;
 }
 
 /* Enlaces */
