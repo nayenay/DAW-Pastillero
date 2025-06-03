@@ -16,10 +16,9 @@ body {
 .container{
   background-color: rgba(28, 104, 166, 0.661);
   align-items: center;
-
   padding: 30px;
   margin-block: 20px;
-  margin-inline: 50px;
+  margin-inline: 120px;
 }
 
 .incorrecto{
@@ -99,8 +98,8 @@ button:hover {
 a {
   display: block;
   text-align: center;
-  margin-top: 15px;
-  color: #007BFF;
+  margin-top: 25px;
+  color: #99fdff;
   text-decoration: none;
 }
 

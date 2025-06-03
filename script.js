@@ -168,7 +168,7 @@ document.addEventListener('DOMContentLoaded', () => {
           const errFecha = document.getElementById("msj-fecha");
           const errHoraPrimera = document.getElementById("msj-horaP");
           
-          [nombre, horas, noCom, dosisTotal, fechaPrimera, horaPrimera].forEach(e => e.classList.remove("error"));
+          [nombre, horas, noCom, dosisTotal, fechaPrimera, horaPrimera].forEach(e => e.classList.remove("incorrecto"));
           [errNombre, errHoras, errNoCom, errDosis, errFecha, errHoraPrimera].forEach(e => e.textContent = "");
 
           if (nombre.value.trim()===""){            
