@@ -1,10 +1,15 @@
 /* Estilos globales */
 body {
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif,Lexend;
   background-color: #f4f6f9;
   color: #333;
   margin: 0;
   padding: 20px;
+}
+
+@font-face {
+  font-family: 'Lexend';
+  src: url('Lexend-Medium.ttf') format('truetype');
 }
 
 /* Encabezados */
@@ -44,6 +49,9 @@ button {
 
 button:hover {
   background-color: #0056b3;
+  border-radius: 3px;
+	border: 2px solid #ffffff;
+	box-shadow: 0 0 10px #a2d8ff ;
 }
 
 /* Enlaces */
