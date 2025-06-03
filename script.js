@@ -194,7 +194,7 @@ document.addEventListener('DOMContentLoaded', () => {
           };
 
           try {
-            await set(ref(db, "Usuarios/" + userId + "/medicamentos/" + nombre), data);
+            await set(ref(db, "DataBase/" + userId + "/Medicamentos/" + nombre), data);
             alert("Medicamento guardado con éxito!");
             if (scriptStatusRegistro) {
               scriptStatusRegistro.textContent = "Medicamento guardado!";
