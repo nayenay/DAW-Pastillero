@@ -168,6 +168,8 @@ document.addEventListener('DOMContentLoaded', () => {
           const errFecha = document.getElementById("msj-fecha");
           const errHoraPrimera = document.getElementById("msj-horaP");
           
+          [nombre, horas, noCom, dosis, fecha, hora].forEach(e => e.classList.remove("error"));
+          [msjNombre, msjHoras, msjCom, msjDosis, msjFecha, msjHora].forEach(e => e.textContent = "");
 
           if (nombre.value.trim()===""){            
             nombre.classList.add("incorrecto")

@@ -2,7 +2,7 @@
 body {
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif,Lexend-Medium;
   background-color: #0c2242;
-  background-image: url("fonditoazuldegradadouwu.jpg");
+  background-image: url(imagensitas\fonditoazuldegradadouwu.jpg);
   color: #333;
   margin: 0;
   padding: 20px;
@@ -14,8 +14,9 @@ body {
 }
 
 .container{
-  background-color: rgba(85, 198, 255, 0.642);
+  background-color: rgba(28, 104, 166, 0.661);
   align-items: center;
+
   padding: 30px;
   margin-block: 20px;
 }
@@ -31,14 +32,22 @@ body {
 
 /* Encabezados */
 h2 {
+  font-family: 'Lexend';
   color: #007BFF;
   text-align: center;
   margin-bottom: 20px;
 }
 
+label{
+  font-family: 'Lexend';
+  font-weight: bold;
+  color: white;
+  text-align: center;
+}
 
 /* Inputs y botones */
 input {
+  font-family: 'Lexend';
   display: block;
   width: 90%;
   max-width: 400px;
@@ -75,7 +84,7 @@ button:hover {
   border-radius: 3px;
 	border: 2px solid #ffffff;
 	box-shadow: 0 0 10px #a2d8ff ;
-  scale: 1.15;
+  scale: 1.05;
 }
 
 /* Enlaces */
