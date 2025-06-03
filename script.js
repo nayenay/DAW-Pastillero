@@ -100,59 +100,113 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   } // Cierre del if (isIndexPage)
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
   // -------------------------------------------------------------
   // LÓGICA ESPECÍFICA PARA REGISTRO.HTML
   // -------------------------------------------------------------
   if (isRegistroPage) {
-    // Asegurarse de que el usuario esté logueado para acceder a esta página
     onAuthStateChanged(auth, (user) => {
       if (!user) {
-        // Si no hay usuario, redirigir al login
         window.location.href = "index.html";
-        return; // Detener la ejecución del script para esta página
+        return;
       }
 
-      // Si hay usuario, habilitar la funcionalidad de guardar medicamento
       const guardarBtn = document.getElementById("guardarBtn");
 
       if (guardarBtn) {
         guardarBtn.addEventListener("click", async () => {
-          const userId = user.uid; // <-- AQUÍ SE OBTIENE EL UID
+          const userId = user.uid;
 
           const nombre = document.getElementById("nombre").value;
-          const horas = parseInt(document.getElementById("horas").value);
+          const horas = parseInt(document.getElementById("horas").value); // Intervalo en horas
           const noCom = parseInt(document.getElementById("noCom").value);
-          const dosis = parseInt(document.getElementById("dosis").value);
-          const primera = document.getElementById("primera").value;
+          const dosisTotal = parseInt(document.getElementById("dosis").value); // Cantidad total de dosis
+          const fechaPrimeraStr = document.getElementById("fechaPrimera").value; // 'YYYY-MM-DD'
+          const horaPrimeraStr = document.getElementById("horaPrimera").value;   // 'HH:MM'
 
-          if (!nombre || isNaN(horas) || isNaN(noCom) || isNaN(dosis) || !primera) {
+          // Validaciones
+          if (!nombre || isNaN(horas) || isNaN(noCom) || isNaN(dosisTotal) || !fechaPrimeraStr || !horaPrimeraStr) {
               alert("Por favor, rellena todos los campos correctamente.");
               return;
+          }
+          if (dosisTotal <= 0 || horas <= 0) {
+              alert("Las dosis total y el intervalo de horas deben ser mayores a cero.");
+              return;
+          }
+
+          // Construir el objeto Date para la primera toma
+          // La zona horaria 'Z' al final del formato ISO 8601 indica UTC.
+          // Para evitar problemas con zonas horarias, es mejor trabajar con UTC si es posible
+          // o al menos ser consistente. Aquí usaremos el método setUTCFullYear, etc.
+          // para construirlo en UTC y luego formatearlo.
+
+          const [year, month, day] = fechaPrimeraStr.split('-').map(Number);
+          const [hour, minute] = horaPrimeraStr.split(':').map(Number);
+
+          // Crear una fecha para la primera toma.
+          // Ojo: month - 1 porque los meses en JavaScript son 0-indexados (0=Enero, 11=Diciembre)
+          let currentDoseTime = new Date(Date.UTC(year, month - 1, day, hour, minute, 0)); // Segundos en 00
+
+          const dosisProgramadas = {}; // Objeto para almacenar las dosis calculadas
+
+          for (let i = 1; i <= dosisTotal; i++) {
+              // Formatear a ISO 8601: YYYY-MM-DDTHH:MM:SSZ
+              // Para obtener la parte 'YYYY-MM-DDTHH:MM:SSZ' directamente de un objeto Date
+              // usamos toISOString().slice(0, 19) + 'Z';
+              // Sin embargo, toISOString() ya devuelve UTC, así que solo necesitamos la Z.
+              // Asegurémonos de que los segundos siempre sean '00'
+              const formattedDate = currentDoseTime.toISOString(); // Ej: "2025-06-03T17:30:00.000Z"
+              // Cortar milisegundos y asegurar 'Z'
+              const finalFormattedDose = formattedDate.substring(0, 19) + 'Z';
+
+              dosisProgramadas[i.toString()] = finalFormattedDose;
+
+              // Calcular la siguiente toma: añadir el intervalo de horas
+              currentDoseTime.setUTCHours(currentDoseTime.getUTCHours() + horas);
           }
 
           const data = {
             NombreMed: nombre,
-            Horas: horas.toString(),
+            Horas: horas.toString(), // Intervalo en horas (string)
             NoCom: noCom.toString(),
-            DosisTotal: dosis.toString(),
-            PrimeraTomaH: primera.split(':')[0],
-            PrimeraTomaM: primera.split(':')[1],
-            Dias: "4",
+            DosisTotal: dosisTotal.toString(), // Cantidad total de dosis (string)
             Nota: "",
+            Dosis: dosisProgramadas // El nuevo nodo con las dosis programadas
           };
 
           try {
-            await set(ref(db, "DataBase/" + userId + "/Medicamentos/" + nombre), data);
+            await set(ref(db, "Usuarios/" + userId + "/medicamentos/" + nombre), data);
             alert("Medicamento guardado con éxito!");
             if (scriptStatusRegistro) {
               scriptStatusRegistro.textContent = "Medicamento guardado!";
               scriptStatusRegistro.style.color = 'green';
             }
+            // Limpiar el formulario
             document.getElementById("nombre").value = "";
             document.getElementById("horas").value = "";
             document.getElementById("noCom").value = "";
             document.getElementById("dosis").value = "";
-            document.getElementById("primera").value = "";
+            document.getElementById("fechaPrimera").value = "";
+            document.getElementById("horaPrimera").value = "";
 
             window.location.href = "lista.html";
 
@@ -166,9 +220,35 @@ document.addEventListener('DOMContentLoaded', () => {
           }
         });
       }
-    }); // Cierre del onAuthStateChanged para isRegistroPage
-  } // Cierre del if (isRegistroPage)
+    });
+  }
 
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
   // -------------------------------------------------------------
   // LÓGICA ESPECÍFICA PARA LISTA.HTML
   // -------------------------------------------------------------
