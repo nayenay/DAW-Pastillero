@@ -130,5 +130,7 @@ ul#lista li {
   text-align: center;
   margin-top: 15px;
   font-size: 14px;
+  padding-block: 10px; 
+  width: 50%;
 }
 

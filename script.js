@@ -123,6 +123,13 @@ document.addEventListener('DOMContentLoaded', () => {
   // -------------------------------------------------------------
   // LÓGICA ESPECÍFICA PARA REGISTRO.HTML
   // -------------------------------------------------------------
+
+  function mostrarError(input, msgDiv, mensaje) {
+    input.classList.add("incorrecto");
+    msgDiv.textContent = mensaje;
+    msgDiv.style.display = "block";
+  }
+
   if (isRegistroPage) {
     onAuthStateChanged(auth, (user) => {
       if (!user) {
@@ -173,51 +180,41 @@ document.addEventListener('DOMContentLoaded', () => {
           [errNombre, errHoras, errNoCom, errDosis, errFecha, errHoraPrimera].forEach(e => e.style.display = "none");
 
           if (nombre.value.trim()===""){            
-            nombre.classList.add("incorrecto");
-            errNombre.textContent = "Este campo es obligatorio";
-            errNombre.style.display = "block"
+            mostrarError(nombre,errNombre,"Este campo es obligatorio");
             return;
           }
 
           if (horas.value.trim()===""){            
-            horas.classList.add("incorrecto");
-            errHoras.textContent = "Este campo es obligatorio";
+            mostrarError(horas,errHoras,"Este campo es obligatorio");
             return;        
           }else if (isNaN(horas.value) || parseInt(horas.value) <= 0){
-            horas.classList.add("incorrecto");
-            errHoras.textContent = "Debe ingresar un número válido de horas";
+            mostrarError(horas,errHoras,"Debe ingresar un número válido de horas");
             return;
           }
           
           if (noCom.value.trim()===""){            
-            noCom.classList.add("incorrecto");
-            errNoCom.textContent = "Este campo es obligatorio"; 
+            mostrarError(noCom,errNoCom,"Este campo es obligatorio"); 
             return;       
           }else if (isNaN(noCom.value) || parseInt(noCom.value) <= 0){
-            noCom.classList.add("incorrecto");
-            errNoCom.textContent = "Debe ingresar un número válido";
+            mostrarError(noCom,errNoCom,"Debe ingresar un número válido");
             return;
           }
 
           if (dosisTotal.value.trim()===""){            
-            dosisTotal.classList.add("incorrecto");
-            errDosis.textContent = "Este campo es obligatorio";         
+            mostrarError(dosisTotal,errDosis,"Este campo es obligatorio");         
             return;
           }else if (isNaN(dosisTotal.value) || parseInt(dosisTotal.value) <= 0){
-            dosisTotal.classList.add("incorrecto");
-            errDosis.textContent = "Debe ingresar una dosis válida";
+            mostrarError(dosisTotal,errDosis,"Debe ingresar una dosis válida");
             return;
           }
 
           if (fechaPrimera.value === ""){            
-            fechaPrimera.classList.add("incorrecto");
-            errFecha.textContent = "Seleccione una fecha";
+            mostrarError(fechaPrimera,errFecha,"Seleccione una fecha");
             return;
           }
 
           if (horaPrimera.value === ""){            
-            horaPrimera.classList.add("incorrecto");
-            errHoraPrimera.textContent = "Seleccione una hora";
+            mostrarError(horaPrimera,errHoraPrimera,"Seleccione una hora");
             return;
           }
  
