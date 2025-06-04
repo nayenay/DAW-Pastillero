@@ -345,7 +345,7 @@ document.addEventListener('DOMContentLoaded', () => {
             titleMed.textContent = med.NombreMed;
 
             const medInfo = document.createElement("p");
-            medInfo.textContent = `Cada ${med.Horas} hrs - Compartimiento ${med.noCom}`
+            medInfo.textContent = `Cada ${med.Horas} hrs - Compartimiento No. ${med.NoCom}`
             //li.textContent = `${med.NombreMed} - cada ${med.Horas} hrs - compartimiento ${med.NoCom}`;
             li.appendChild(titleMed);
             li.appendChild(medInfo)

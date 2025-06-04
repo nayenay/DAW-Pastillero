@@ -104,7 +104,7 @@ a {
   font-family: 'Lexend';
   display: block;
   text-align: center;
-  margin-top: 25px;
+  margin-block: 25px;
   color: #99fdff;
   text-decoration: none;
 }
@@ -142,4 +142,5 @@ ul#lista li {
   font-size: 14px;
   padding-block: 10px; 
   width: 50%;
+  border: solid 3px;
 }
