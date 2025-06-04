@@ -251,21 +251,21 @@ document.addEventListener('DOMContentLoaded', () => {
           }
 
           const data = {
-            NombreMed: nombre,
-            Horas: horas.toString(), // Intervalo en horas (string)
-            NoCom: noCom.toString(),
-            DosisTotal: dosisTotal.toString(), // Cantidad total de dosis (string)
+            NombreMed: nombre.value.trim(),
+            Horas: Number(horas.value.trim()), // Intervalo en horas (string)
+            NoCom: Number(noCom.value.trim()),
+            DosisTotal: Number(dosisTotal.value.trim()), // Cantidad total de dosis (string)
             Nota: "",
             Dosis: dosisProgramadas // El nuevo nodo con las dosis programadas
           };
 
           try {
-            await set(ref(db, "DataBase/" + userId + "/Medicamentos/" + nombre), data);
+            await set(ref(db, "DataBase/" + userId + "/Medicamentos/" + nombre.value.trim()), data);
             alert("Medicamento guardado con éxito!");
             if (scriptStatusRegistro) {
               scriptStatusRegistro.textContent = "Medicamento guardado!";
               scriptStatusRegistro.style.color = 'green';
-              scriptStatusRegistro.style.backgroundColor = rgba(203, 255, 203, 0.60);
+              scriptStatusRegistro.style.backgroundColor = "rgba(203, 255, 203, 0.60)";
             }
             // Limpiar el formulario
             document.getElementById("nombre").value = "";
@@ -283,7 +283,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (scriptStatusRegistro) {
               scriptStatusRegistro.textContent = "Error al guardar: " + err.message;
               scriptStatusRegistro.style.color = 'red';
-              scriptStatusRegistro.style.backgroundColor = rgba(255, 135, 135, 0.60);
+              scriptStatusRegistro.style.backgroundColor = "rgba(255, 135, 135, 0.60)";
             }
           }
         });
