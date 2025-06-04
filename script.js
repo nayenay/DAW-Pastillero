@@ -249,70 +249,108 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // -------------------------------------------------------------
-  // LÓGICA ESPECÍFICA PARA LISTA.HTML
-  // -------------------------------------------------------------
-  if (isListaPage) {
-    const lista = document.getElementById("lista");
+ // ... (código anterior sin cambios) ...
 
-    onAuthStateChanged(auth, (user) => {
-      if (!user) {
-        window.location.href = "index.html";
-        return;
-      }
+  // -------------------------------------------------------------
+  // LÓGICA ESPECÍFICA PARA LISTA.HTML
+  // -------------------------------------------------------------
+  if (isListaPage) {
+    const lista = document.getElementById("lista");
 
-      const userId = user.uid;
+    onAuthStateChanged(auth, (user) => {
+      if (!user) {
+        window.location.href = "index.html";
+        return;
+      }
 
-      // REVISAR ESTA RUTA: "DataBase/" + userId + "/Medicamentos"
-      // Asegúrate de que esta ruta coincida exactamente con la ruta de guardado
-      const medRef = ref(db, "DataBase/" + userId + "/Medicamentos");
+      const userId = user.uid;
 
-      get(medRef).then(snapshot => {
-        if (snapshot.exists()) {
-          const datos = snapshot.val();
-          lista.innerHTML = "";
-          for (let medKey in datos) {
-            const med = datos[medKey];
+      const medRef = ref(db, "DataBase/" + userId + "/Medicamentos"); // Asegúrate de que esta ruta sea correcta
 
-            const li = document.createElement("li");
-            const titleMed = document.createElement("h3");
-            titleMed.textContent = med.NombreMed;
+      get(medRef).then(snapshot => {
+        if (snapshot.exists()) {
+          const datos = snapshot.val();
+          lista.innerHTML = ""; // Limpiar la lista antes de añadir
 
-            const medInfo = document.createElement("p");
-            // Agregando las dosis programadas para mostrar
-            let dosisInfo = "Dosis programadas: ";
+          // Obtener la fecha y hora actual en UTC para comparación
+          const now = new Date(); // Obtiene la fecha/hora actual local
+          // Crear una versión UTC para comparación, ya que las dosis están guardadas en UTC
+          const nowUtc = new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate(),
+                                            now.getHours(), now.getMinutes(), now.getSeconds()));
+
+
+          for (let medKey in datos) {
+            const med = datos[medKey];
+
+            const li = document.createElement("li");
+            const titleMed = document.createElement("h3");
+            titleMed.textContent = med.NombreMed;
+
+            const medInfoHoras = document.createElement("p");
+            medInfoHoras.textContent = `Cada ${med.Horas} hrs`;
+
+            const medInfoCompartimiento = document.createElement("p");
+            medInfoCompartimiento.textContent = `Compartimiento No. ${med.NoCom}`;
+
+            const medInfoProximaDosis = document.createElement("p");
+            let proximaDosisTexto = "Próxima dosis: No programada"; // Texto por defecto
+
             if (med.Dosis) {
-                for (let doseNum in med.Dosis) {
-                    const doseTime = new Date(med.Dosis[doseNum]); // Convertir la cadena ISO a objeto Date
-                    // Formatear para mostrar de forma legible (ej. "HH:MM DD/MM/YYYY")
-                    const formattedDoseTime = `${String(doseTime.getUTCHours()).padStart(2, '0')}:${String(doseTime.getUTCMinutes()).padStart(2, '0')} ${String(doseTime.getUTCDate()).padStart(2, '0')}/${String(doseTime.getUTCMonth() + 1).padStart(2, '0')}/${doseTime.getUTCFullYear()}`;
-                    dosisInfo += `${doseNum}: ${formattedDoseTime}; `;
-                }
-            } else {
-                dosisInfo += "No programadas.";
-            }
+                const dosisArray = Object.values(med.Dosis); // Obtener solo los valores de las dosis
+                let proximaDosisEncontrada = null;
 
-            medInfo.textContent = `Cada ${med.Horas} hrs - Compartimiento No. ${med.NoCom}. ${dosisInfo}`;
-            //li.textContent = `${med.NombreMed} - cada ${med.Horas} hrs - compartimiento ${med.NoCom}`;
-            li.appendChild(titleMed);
-            li.appendChild(medInfo)
-            lista.appendChild(li);
-          }
-        } else {
-          lista.innerHTML = "<li>No hay medicamentos registrados.</li>";
-        }
-        if (scriptStatusLista) {
-          scriptStatusLista.textContent = "Medicamentos cargados!";
-          scriptStatusLista.style.color = 'yellowgreen';
-        }
-      }).catch(err => {
-        console.error("Error al cargar medicamentos:", err);
-        if (scriptStatusLista) {
-          scriptStatusLista.textContent = "Error al cargar meds: " + err.message;
-          scriptStatusLista.style.color = 'red';
-        }
-      });
-    }); // Cierre del onAuthStateChanged para isListaPage
-  } // Cierre del if (isListaPage)
+                // Ordenar las dosis para asegurar que las verificamos cronológicamente
+                dosisArray.sort((a, b) => new Date(a).getTime() - new Date(b).getTime());
+
+                for (const doseStr of dosisArray) {
+                    const doseTime = new Date(doseStr); // Convertir la cadena ISO a objeto Date (ya es UTC)
+
+                    // Comparar con la hora actual en UTC
+                    if (doseTime.getTime() >= nowUtc.getTime()) {
+                        proximaDosisEncontrada = doseTime;
+                        break; // Encontramos la próxima, salimos del bucle
+                    }
+                }
+
+                if (proximaDosisEncontrada) {
+                    // Formatear la próxima dosis al formato deseado (HH:MM DD/MM/YYYY)
+                    // NOTA: Si las fechas se guardan en UTC y quieres que se muestren
+                    // en la hora local del usuario, usa los métodos Date normales:
+                    const displayHour = String(proximaDosisEncontrada.getHours()).padStart(2, '0');
+                    const displayMinute = String(proximaDosisEncontrada.getMinutes()).padStart(2, '0');
+                    const displayDay = String(proximaDosisEncontrada.getDate()).padStart(2, '0');
+                    const displayMonth = String(proximaDosisEncontrada.getMonth() + 1).padStart(2, '0'); // Meses 0-indexados
+                    const displayYear = proximaDosisEncontrada.getFullYear();
+
+                    proximaDosisTexto = `Próxima dosis: ${displayHour}:${displayMinute} ${displayDay}/${displayMonth}/${displayYear}`;
+                } else {
+                    proximaDosisTexto = "No hay dosis futuras."; // Todas las dosis están en el pasado
+                }
+            }
+            medInfoProximaDosis.textContent = proximaDosisTexto;
+
+
+            li.appendChild(titleMed);
+            li.appendChild(medInfoHoras);
+            li.appendChild(medInfoCompartimiento);
+            li.appendChild(medInfoProximaDosis); // Añadir la información de la próxima dosis
+            lista.appendChild(li);
+          }
+        } else {
+          lista.innerHTML = "<li>No hay medicamentos registrados.</li>";
+        }
+        if (scriptStatusLista) {
+          scriptStatusLista.textContent = "Medicamentos cargados!";
+          scriptStatusLista.style.color = 'yellowgreen';
+        }
+      }).catch(err => {
+        console.error("Error al cargar medicamentos:", err);
+        if (scriptStatusLista) {
+          scriptStatusLista.textContent = "Error al cargar meds: " + err.message;
+          scriptStatusLista.style.color = 'red';
+        }
+      });
+    }); // Cierre del onAuthStateChanged para isListaPage
+  } // Cierre del if (isListaPage)
 
 }); // Cierre del document.addEventListener('DOMContentLoaded')
