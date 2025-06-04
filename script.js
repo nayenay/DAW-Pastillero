@@ -264,7 +264,7 @@ document.addEventListener('DOMContentLoaded', () => {
             alert("Medicamento guardado con éxito!");
             if (scriptStatusRegistro) {
               scriptStatusRegistro.textContent = "Medicamento guardado!";
-              scriptStatusRegistro.style.color = 'green';
+              scriptStatusRegistro.style.color = 'greenyellow';
               scriptStatusRegistro.style.backgroundColor = "rgba(203, 255, 203, 0.60)";
             }
             // Limpiar el formulario
@@ -339,8 +339,16 @@ document.addEventListener('DOMContentLoaded', () => {
           lista.innerHTML = "";
           for (let medKey in datos) {
             const med = datos[medKey];
+
             const li = document.createElement("li");
-            li.textContent = `${med.NombreMed} - cada ${med.Horas} hrs - compartimiento ${med.NoCom}`;
+            const titleMed = document.createElement("h3");
+            titleMed.textContent = med.NombreMed;
+
+            const medInfo = document.createElement("p");
+            medInfo.textContent = `Cada ${med.Horas} hrs - Compartimiento ${med.noCom}`
+            //li.textContent = `${med.NombreMed} - cada ${med.Horas} hrs - compartimiento ${med.NoCom}`;
+            li.appendChild(titleMed);
+            li.appendChild(medInfo)
             lista.appendChild(li);
           }
         } else {
@@ -348,12 +356,13 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         if (scriptStatusLista) {
           scriptStatusLista.textContent = "Medicamentos cargados!";
-          scriptStatusLista.style.color = 'green';
+          scriptStatusLista.style.color = 'yellowgreen';
         }
       }).catch(err => {
         console.error("Error al cargar medicamentos:", err);
         if (scriptStatusLista) {
           scriptStatusLista.textContent = "Error al cargar meds: " + err.message;
+          scriptStatusLista.style.color = 'red';
         }
       });
     }); // Cierre del onAuthStateChanged para isListaPage

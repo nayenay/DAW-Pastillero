@@ -101,6 +101,7 @@ button:hover {
 
 /* Enlaces */
 a {
+  font-family: 'Lexend';
   display: block;
   text-align: center;
   margin-top: 25px;
@@ -114,8 +115,7 @@ a:hover {
 
 /* Lista de medicamentos */
 ul#lista {
-  font-family: "Lexend";
-  color:slategray;
+  font-family: "Lexend";  
   list-style-type: none;
   padding: 0;
   max-width: 500px;
@@ -123,11 +123,13 @@ ul#lista {
 }
 
 ul#lista li {
-  background-color: #e9ecef;
+  background-color: #6dd7bc66;
+  color: white;
   margin: 5px 0;
   padding: 10px;
   border-radius: 5px;
 }
+
 
 /* Mensajes de estado */
 #scriptStatusLista,
