@@ -16,7 +16,7 @@ body {
 .container{
   display: flex;
   flex-direction: column;
-  background-color: rgba(28, 104, 166, 0.661);
+  background-color: rgb(30 49 143 / 50%);
   align-items: center;
   padding: 30px;
   margin-block: 20px;
@@ -31,12 +31,16 @@ body {
 
 .msj-error{
   display: none;
-  color:red;
+  font-family: 'Lexend';
+  color:rgb(255, 171, 171);
   font-size: 15px;
   text-align: center;
-  background-color: rgba(255, 187, 179, 0.695);
+  background-color: rgba(133, 42, 42, 0.7);  
   padding-block: 5px;
+  padding-inline: 50px;
   margin-bottom: 10px;
+  border-radius: 8px;
+  
 }
 
 /* Encabezados */
@@ -50,7 +54,6 @@ h2 {
 
 label{
   font-family: 'Lexend';
-  font-weight: bold;
   color: white;
 }
 
@@ -75,12 +78,12 @@ input:focus{
 button {
   font-family: 'Lexend';
   display: block;
-  width: 90%;
+  width: 40%;
   max-width: 400px;
   margin: 10px auto;
   padding: 10px;
   font-size: 16px;
-  background-color: #007BFF;
+  background-color: #b55fca;
   color: white;
   border: none;
   border-radius: 5px;
@@ -89,7 +92,7 @@ button {
 }
 
 button:hover {
-  background-color: #0056b3;
+  background-color: #6b267c;
   border-radius: 3px;
 	border: 2px solid #ffffff;
 	box-shadow: 0 0 10px #a2d8ff ;
@@ -132,7 +135,7 @@ ul#lista li {
 #scriptStatus {
   text-align: center;
   font-weight: bold;
-  color:slategray;
+  color:lavenderblush;
   margin-top: 15px;
   font-size: 14px;
   padding-block: 10px; 

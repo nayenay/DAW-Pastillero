@@ -225,7 +225,7 @@ document.addEventListener('DOMContentLoaded', () => {
           // o al menos ser consistente. Aquí usaremos el método setUTCFullYear, etc.
           // para construirlo en UTC y luego formatearlo.
 
-          const [year, month, day] = fechaPrimera.value.split('-').map(Number);
+          const [year, month, day] = fechaPrimera.value.split('/').map(Number);
           const [hour, minute] = horaPrimera.value.split(':').map(Number);
 
           // Crear una fecha para la primera toma.
