@@ -265,6 +265,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (scriptStatusRegistro) {
               scriptStatusRegistro.textContent = "Medicamento guardado!";
               scriptStatusRegistro.style.color = 'green';
+              scriptStatusRegistro.style.backgroundColor = rgba(203, 255, 203, 0.60);
             }
             // Limpiar el formulario
             document.getElementById("nombre").value = "";
@@ -282,6 +283,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (scriptStatusRegistro) {
               scriptStatusRegistro.textContent = "Error al guardar: " + err.message;
               scriptStatusRegistro.style.color = 'red';
+              scriptStatusRegistro.style.backgroundColor = rgba(255, 135, 135, 0.60);
             }
           }
         });

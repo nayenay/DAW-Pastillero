@@ -2,7 +2,7 @@
 body {
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif,Lexend-Medium;
   background-color: #0c2242;
-  background-image: url(imagensitas\fonditoazuldegradadouwu.jpg);
+  background-image: url(imagensitas/fonditoazuldegradadouwu.jpg);
   color: #ffffff;
   margin: 0;
   padding: 20px;
@@ -14,6 +14,8 @@ body {
 }
 
 .container{
+  display: flex;
+  flex-direction: column;
   background-color: rgba(28, 104, 166, 0.661);
   align-items: center;
   padding: 30px;
@@ -50,7 +52,6 @@ label{
   font-family: 'Lexend';
   font-weight: bold;
   color: white;
-  text-align: center;
 }
 
 /* Inputs y botones */
@@ -110,6 +111,8 @@ a:hover {
 
 /* Lista de medicamentos */
 ul#lista {
+  font-family: "Lexend";
+  color:slategray;
   list-style-type: none;
   padding: 0;
   max-width: 500px;
@@ -128,9 +131,10 @@ ul#lista li {
 #scriptStatusRegistro,
 #scriptStatus {
   text-align: center;
+  font-weight: bold;
+  color:slategray;
   margin-top: 15px;
   font-size: 14px;
   padding-block: 10px; 
   width: 50%;
 }
-
