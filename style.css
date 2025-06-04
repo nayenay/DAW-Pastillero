@@ -3,7 +3,7 @@ body {
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif,Lexend-Medium;
   background-color: #0c2242;
   background-image: url(imagensitas\fonditoazuldegradadouwu.jpg);
-  color: #333;
+  color: #ffffff;
   margin: 0;
   padding: 20px;
 }
@@ -18,7 +18,7 @@ body {
   align-items: center;
   padding: 30px;
   margin-block: 20px;
-  margin-inline: 120px;
+  margin-inline: 200px;
 }
 
 .incorrecto{
@@ -68,7 +68,7 @@ input {
 }
 
 input:focus{
-  box-shadow: 0 0 10px #007BFF
+  box-shadow: 0 0 10px #aaebff
 }
 
 button {

@@ -195,7 +195,7 @@ document.addEventListener('DOMContentLoaded', () => {
             return;       
           }else if (isNaN(noCom.value) || parseInt(noCom.value) <= 0){
             noCom.classList.add("incorrecto");
-            errHoras.textContent = "Debe ingresar un número válido";
+            errNoCom.textContent = "Debe ingresar un número válido";
             return;
           }
 
@@ -250,7 +250,7 @@ document.addEventListener('DOMContentLoaded', () => {
               dosisProgramadas[i.toString()] = finalFormattedDose;
 
               // Calcular la siguiente toma: añadir el intervalo de horas
-              currentDoseTime.setUTCHours(currentDoseTime.getUTCHours() + horas);
+              currentDoseTime.setUTCHours(currentDoseTime.getUTCHours() + parseInt(horas.value));
           }
 
           const data = {
