@@ -258,6 +258,103 @@ document.addEventListener('DOMContentLoaded', () => {
                 closeAllMenus();
             }
         });
+//-------------------------------------
+
+        // =========================================================
+        // === INICIO DE LA LÓGICA DEL MODAL DE EDICIÓN Y SUS FUNCIONES ===
+        // =========================================================
+
+        // Obtener referencias al modal y sus elementos
+        const editModal = document.getElementById("editModal");
+        const closeButton = editModal.querySelector(".close-button");
+        const editNombreInput = document.getElementById("editNombre");
+        const editHorasInput = document.getElementById("editHoras");
+        const editNoComInput = document.getElementById("editNoCom");
+        const editDosisTotalInput = document.getElementById("editDosisTotal");
+        const saveEditBtn = document.getElementById("saveEditBtn");
+
+        let currentEditingMedKey = null; // Para saber qué medicamento estamos editando
+
+        // Función para abrir el modal
+        function openEditModal(medData, medKey) {
+            currentEditingMedKey = medKey;
+            editNombreInput.value = medData.NombreMed;
+            editHorasInput.value = medData.Horas;
+            editNoComInput.value = medData.NoCom;
+            editDosisTotalInput.value = medData.DosisTotal;
+            editModal.style.display = "flex"; // Usar flex para centrar
+        }
+
+        // Función para cerrar el modal
+        function closeEditModal() {
+            editModal.style.display = "none";
+            currentEditingMedKey = null;
+        }
+
+        // Eventos para cerrar el modal
+        closeButton.addEventListener('click', closeEditModal);
+        window.addEventListener('click', (event) => {
+            if (event.target == editModal) {
+                closeEditModal();
+            }
+        });
+
+        // Event listener para el botón "Guardar Cambios" del modal
+        saveEditBtn.addEventListener('click', async () => {
+            const user = auth.currentUser;
+            if (!user || !currentEditingMedKey) return;
+
+            const newNombre = editNombreInput.value.trim();
+            const newHoras = parseInt(editHorasInput.value.trim());
+            const newNoCom = parseInt(editNoComInput.value.trim());
+            const newDosisTotal = parseInt(editDosisTotalInput.value.trim());
+
+            // Validación básica (puedes añadir más)
+            if (!newNombre || isNaN(newHoras) || isNaN(newNoCom) || isNaN(newDosisTotal) || newHoras <=0 || newNoCom <=0 || newDosisTotal <=0) {
+                alert("Por favor, rellena todos los campos del formulario de edición correctamente.");
+                return;
+            }
+
+            const medRef = ref(db, `DataBase/${user.uid}/Medicamentos/${currentEditingMedKey}`);
+            try {
+                // Si el nombre del medicamento cambia, es un poco más complejo:
+                // hay que borrar el viejo y crear uno nuevo con el nuevo nombre
+                if (newNombre !== currentEditingMedKey) {
+                    // Obtener los datos actuales para no perder Dosis y Nota
+                    const snapshot = await get(medRef);
+                    const oldMedData = snapshot.val();
+                    const newMedData = {
+                        ...oldMedData, // Copia datos existentes
+                        NombreMed: newNombre,
+                        Horas: newHoras.toString(),
+                        NoCom: newNoCom.toString(),
+                        DosisTotal: newDosisTotal.toString()
+                    };
+                    await remove(medRef); // Eliminar el medicamento con el nombre antiguo
+                    await set(ref(db, `DataBase/${user.uid}/Medicamentos/${newNombre}`), newMedData); // Guardar con el nuevo nombre
+                } else {
+                    // Si el nombre no cambia, solo actualizamos los campos modificados
+                    await update(medRef, {
+                        NombreMed: newNombre,
+                        Horas: newHoras.toString(),
+                        NoCom: newNoCom.toString(),
+                        DosisTotal: newDosisTotal.toString()
+                    });
+                }
+                
+                alert("Medicamento actualizado con éxito!");
+                closeEditModal();
+                cargarMedicamentos(user.uid); // Recargar la lista
+            } catch (error) {
+                alert("Error al actualizar medicamento: " + error.message);
+                console.error("Error al actualizar:", error);
+            }
+        });
+
+        // =========================================================
+        // === FIN DE LA LÓGICA DEL MODAL DE EDICIÓN ===
+        // =========================================================
+
 
         // Función para registrar que se tomó una dosis
         async function registrarDosisTomada(userId, medicamentoNombre, dosisPrevias) {
