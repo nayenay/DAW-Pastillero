@@ -382,13 +382,18 @@ document.addEventListener('DOMContentLoaded', () => {
                         optionsButton.addEventListener('click', (event) => {
                             event.stopPropagation(); // Evitar que el clic se propague al documento
                             closeAllMenus(); // Cierra otros menús abiertos
-                            const menu = event.target.nextElementSibling; // El menú es el siguiente hermano
+
+
+                            const listItem = event.target.closest('.medicamento-item'); // Encuentra el li padre
+                            if (listItem) {
+                            const menu = listItem.querySelector('.options-menu'); // Busca el menú dentro de ese li
                             if (menu) {
                                 menu.classList.toggle('active'); // Alternar visibilidad
+                                }
                             }
                         });
                         medHeader.appendChild(optionsButton);
-                        li.appendChild(medHeader);
+                        li.appendChild(medHeader); // medHeader se añade a li
 
                         // Menú desplegable
                         const optionsMenu = document.createElement("div");
