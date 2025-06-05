@@ -499,9 +499,9 @@ document.addEventListener('DOMContentLoaded', () => {
                         const editBtn = document.createElement("button");
                         editBtn.textContent = "Editar";
                         editBtn.addEventListener('click', () => {
-                            alert("Función 'Editar' para " + med.NombreMed);
                             closeAllMenus();
                             // Implementar lógica de edición aquí
+                            openEditModal(med, medKey);
                         });
                         optionsMenu.appendChild(editBtn);
 
