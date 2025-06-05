@@ -144,3 +144,91 @@ ul#lista li {
   width: 50%;
   border: solid 3px;
 }
+
+
+
+
+
+
+
+
+
+/* Estilos para el menú de opciones (tres puntos) */
+.medicamento-item {
+    position: relative;
+    /* Necesario para posicionar el menú desplegable en relación al li */
+    background-color: #6dd7bc66;
+    color: white;
+    margin: 5px 0;
+    padding: 20px; /* Reducido el padding para el botón */
+    border-radius: 5px;
+    display: flex; /* Para alinear el título y el botón */
+    flex-direction: column; /* Para apilar el contenido del medicamento */
+    align-items: flex-start; /* Alinear el texto a la izquierda */
+}
+
+.medicamento-header {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.options-button {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 24px;
+    cursor: pointer;
+    padding: 5px;
+    line-height: 1; /* Para que el texto sea solo los puntos */
+    position: absolute; /* Posicionamiento absoluto */
+    top: 10px; /* Ajusta según sea necesario */
+    right: 10px; /* Ajusta según sea necesario */
+}
+
+.options-button:hover {
+    color: #99fdff;
+}
+
+.options-menu {
+    display: none; /* Oculto por defecto */
+    position: absolute;
+    top: 40px; /* Debajo del botón */
+    right: 10px;
+    background-color: #2a3d66; /* Fondo del menú */
+    border: 1px solid #4a5c8c;
+    border-radius: 5px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+    z-index: 10; /* Asegura que esté encima de otros elementos */
+    min-width: 150px;
+}
+
+.options-menu.active {
+    display: block; /* Mostrar cuando esté activo */
+}
+
+.options-menu button {
+    display: block; /* Cada opción como un bloque */
+    width: 100%;
+    padding: 10px 15px;
+    background: none;
+    border: none;
+    color: white;
+    text-align: left;
+    cursor: pointer;
+    font-size: 14px;
+    border-bottom: 1px solid #3a4d7d; /* Separador entre opciones */
+}
+
+.options-menu button:last-child {
+    border-bottom: none; /* No hay separador en el último */
+}
+
+.options-menu button:hover {
+    background-color: #3a4d7d;
+    border-radius: 0; /* Eliminar borde redondo al pasar el mouse */
+    box-shadow: none; /* Eliminar sombra al pasar el mouse */
+    scale: 1; /* Eliminar escalado al pasar el mouse */
+}
+
