@@ -5,116 +5,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Monitoreo de Medicamentos</title>
     <link rel="stylesheet" href="style.css">
-    <style>
-        body {
-            font-family: sans-serif;
-            background-color: #87CEEB; /* Un azul claro de fondo */
-            margin: 0;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-
-        .monitor-title {
-            color: white;
-            font-size: 2em;
-            margin-bottom: 20px;
-        }
-
-        .medicamento-container {
-            background-color: white;
-            color: #2a3d66; /* Un azul oscuro para el texto */
-            padding: 20px;
-            margin-bottom: 15px;
-            border-radius: 10px;
-            box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
-            width: 90%;
-            max-width: 500px;
-        }
-
-        .medicamento-title {
-            font-size: 1.5em;
-            margin-bottom: 10px;
-        }
-
-        .dosis-row {
-            display: flex;
-            gap: 8px;
-            align-items: center;
-        }
-
-        .dosis-circle {
-            width: 20px;
-            height: 20px;
-            border-radius: 50%;
-            border: 1px solid #ccc;
-        }
-
-        .dosis-blue {
-            background-color: #007bff; /* Azul */
-        }
-
-        .dosis-purple {
-            background-color: #800080; /* Morado */
-        }
-
-        .dosis-gray {
-            background-color: #d3d3d3; /* Gris claro */
-        }
-    </style>
 </head>
 <body>
-    <h1 class="monitor-title">Monitoreo</h1>
-
-    <div class="medicamento-container">
-        <h2 class="medicamento-title">Medicamento 1</h2>
-        <div class="dosis-row">
-            <div class="dosis-circle dosis-blue"></div>
-            <div class="dosis-circle dosis-blue"></div>
-            <div class="dosis-circle dosis-blue"></div>
-            <div class="dosis-circle dosis-purple"></div>
-            <div class="dosis-circle dosis-blue"></div>
-            <div class="dosis-circle dosis-blue"></div>
-            <div class="dosis-circle dosis-blue"></div>
-            <div class="dosis-circle dosis-gray"></div>
-            <div class="dosis-circle dosis-gray"></div>
-            <div class="dosis-circle dosis-gray"></div>
-        </div>
+    <h1 class="monitor-title">Monitoreo de Dosis</h1>
+    <div class="container" id="monitoreo-lista">
+        <p>Cargando monitoreo...</p>
+    </div>
+    
+    <div class="navigation-links">
+        <a href="lista.html">Volver a la Lista</a>
+        <a href="registro.html">Registrar Nuevo</a>
     </div>
 
-    <div class="medicamento-container">
-        <h2 class="medicamento-title">Medicamento 2</h2>
-        <div class="dosis-row">
-            <div class="dosis-circle dosis-blue"></div>
-            <div class="dosis-circle dosis-blue"></div>
-            <div class="dosis-circle dosis-blue"></div>
-            <div class="dosis-circle dosis-purple"></div>
-            <div class="dosis-circle dosis-blue"></div>
-            <div class="dosis-circle dosis-gray"></div>
-            <div class="dosis-circle dosis-gray"></div>
-            <div class="dosis-circle dosis-gray"></div>
-            <div class="dosis-circle dosis-gray"></div>
-            <div class="dosis-circle dosis-gray"></div>
-        </div>
-    </div>
-
-    <div class="medicamento-container">
-        <h2 class="medicamento-title">Medicamento 3</h2>
-        <div class="dosis-row">
-            <div class="dosis-circle dosis-blue"></div>
-            <div class="dosis-circle dosis-blue"></div>
-            <div class="dosis-circle dosis-blue"></div>
-            <div class="dosis-circle dosis-purple"></div>
-            <div class="dosis-circle dosis-blue"></div>
-            <div class="dosis-circle dosis-gray"></div>
-            <div class="dosis-circle dosis-gray"></div>
-            <div class="dosis-circle dosis-gray"></div>
-            <div class="dosis-circle dosis-gray"></div>
-            <div class="dosis-circle dosis-gray"></div>
-        </div>
-    </div>
-
-    <script type="module" src="script-monitor.js"></script>
+    <script type="module" src="script.js"></script>
 </body>
 </html>
