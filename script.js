@@ -1,6 +1,7 @@
 // Importa las funciones de autenticación y la configuración de Firebase
 import { auth, db } from './firebase-config.js';
-import { signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js';
+// Importa sendPasswordResetEmail para recuperar contraseña
+import { signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut, sendPasswordResetEmail } from 'https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js';
 import { ref, set, get, remove, update } from 'https://www.gstatic.com/firebasejs/9.22.2/firebase-database.js';
 
 // =========================================================
@@ -66,6 +67,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const passwordInput = document.getElementById("password");
         const loginBtn = document.getElementById("loginBtn");
         const registerBtn = document.getElementById("registerBtn");
+        const forgotPasswordBtn = document.getElementById("forgotPasswordBtn"); // Nuevo botón
 
         if (loginBtn) {
             loginBtn.addEventListener("click", () => {
@@ -88,7 +90,27 @@ document.addEventListener('DOMContentLoaded', () => {
                     .catch(err => { alert("Error al registrarse: " + err.message); console.error("Error de registro:", err); if (scriptStatusIndex) { scriptStatusIndex.textContent = "Error de Registro: " + err.message; scriptStatusIndex.style.color = 'red'; } });
             });
         }
-    }
+
+        // Lógica para el botón de recuperar contraseña
+        if (forgotPasswordBtn) {
+            forgotPasswordBtn.addEventListener("click", async () => {
+                const email = emailInput.value;
+                if (!email) {
+                    alert("Por favor, ingresa tu correo electrónico para recuperar la contraseña.");
+                    return;
+                }
+                try {
+                    await sendPasswordResetEmail(auth, email);
+                    alert("Se ha enviado un correo electrónico a " + email + " para restablecer tu contraseña. Por favor, revisa tu bandeja de entrada.");
+                    if (scriptStatusIndex) { scriptStatusIndex.textContent = "Correo de recuperación enviado!"; scriptStatusIndex.style.color = 'green'; }
+                } catch (error) {
+                    alert("Error al enviar el correo de recuperación: " + error.message);
+                    console.error("Error al recuperar contraseña:", error);
+                    if (scriptStatusIndex) { scriptStatusIndex.textContent = "Error al enviar correo: " + error.message; scriptStatusIndex.style.color = 'red'; }
+                }
+            });
+        }
+    } // Cierre del if (isIndexPage)
 
     // -------------------------------------------------------------
     // LÓGICA ESPECÍFICA PARA REGISTRO.HTML
@@ -175,6 +197,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // -------------------------------------------------------------
     if (isListaPage) {
         const lista = document.getElementById("lista");
+        const logoutBtn = document.getElementById("logoutBtn"); // Obtener referencia al nuevo botón
 
         function closeAllMenus() {
             document.querySelectorAll('.options-menu.active').forEach(menu => {
@@ -278,6 +301,21 @@ document.addEventListener('DOMContentLoaded', () => {
         // =========================================================
         // === FIN DE LA LÓGICA DEL MODAL DE EDICIÓN ===
         // =========================================================
+
+
+        // Lógica para el botón de Cerrar Sesión
+        if (logoutBtn) {
+            logoutBtn.addEventListener("click", async () => {
+                try {
+                    await signOut(auth);
+                    alert("Sesión cerrada correctamente.");
+                    window.location.href = "index.html"; // Redirigir al login
+                } catch (error) {
+                    alert("Error al cerrar sesión: " + error.message);
+                    console.error("Error al cerrar sesión:", error);
+                }
+            });
+        }
 
 
         // Función para registrar que se tomó una dosis
@@ -432,7 +470,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
                         if (med.Dosis) {
                             const dosisEntries = Object.entries(med.Dosis).sort((a,b) => new Date(a[0]).getTime() - new Date(b[0]).getTime());
-                            let proximaDosisEncontrada = null;
 
                             for (const [scheduledIso, doseObj] of dosisEntries) {
                                 const scheduledDate = new Date(scheduledIso);
