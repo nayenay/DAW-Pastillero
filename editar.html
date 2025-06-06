@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <link rel="stylesheet" href="style.css">
+  <title>Editar Medicamento</title>
+  </head>
+<body>
+  <h2>REGISTRAR MEDICAMENTO</h2>
+  <div class="container">
+    <input id="editNombre" placeholder="Nombre del medicamento"><br>
+    <div class="msj-error" id="msj-editNombre"></div>
+
+    <input id="editHoras" placeholder="Cada cuántas horas"><br>   
+    <div class="msj-error" id="msj-editHoras"></div>
+
+    <input id="editNoCom" placeholder="No. de compartimiento"><br>
+    <div class="msj-error" id="msj-editNoCom"></div>
+
+    <input id="editDosis" placeholder="Dosis total"><br>    
+    <div class="msj-error" id="msj-editDosis"></div>
+
+    <label for="edFechaPrimera">Fecha de primera toma:</label>
+    <input type="date" id="editFechaPrimera"><br>    
+    <div class="msj-error" id="msj-editFecha"></div>
+
+    <label for="edHoraPrimera">Hora de primera toma (HH:MM):</label>
+    <input type="time" id="editHoraPrimera"><br>
+    <div class="msj-error" id="msj-editHoraP"></div>
+    
+    <button id="editarBtn">Guardar Cambios</button>
+    <a href="lista.html">Ver medicamentos</a>
+
+    <!-- <p id="scriptStatusRegistro" style="color: rgb(23, 96, 199); font-weight: bold;"></p> -->
+    <p id="scriptStatusRegistro"></p>
+
+  </div>
+  <script type="module" src="script.js"></script>
+</body>
+</html>
