@@ -4,10 +4,9 @@ import { signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthState
 import { ref, set, get, remove, update } from 'https://www.gstatic.com/firebasejs/9.22.2/firebase-database.js';
 
 // =========================================================
-// === FUNCIONES AUXILIARES GLOBALES (Pueden ser exportadas si se modulariza) ===
+// === FUNCIONES AUXILIARES GLOBALES (compartidas entre lógicas de página) ===
 // =========================================================
 
-// Esta función auxiliar se usa para mostrar errores de validación en los inputs (usada en registro)
 function mostrarError(inputElement, msgDivElement, mensaje) {
     if (inputElement) inputElement.classList.add("incorrecto");
     if (msgDivElement) {
@@ -16,30 +15,23 @@ function mostrarError(inputElement, msgDivElement, mensaje) {
     }
 }
 
-// Función auxiliar para calcular el estado de la dosis (usada en lista y monitoreo)
-// Retorna un objeto con status (0=pending, 1=on time, 2=late) y colorClass
 function getDoseStatus(scheduledTimeIso, actualTakenTimeIso) {
     const scheduledDate = new Date(scheduledTimeIso);
     const actualTakenDate = actualTakenTimeIso ? new Date(actualTakenTimeIso) : null;
-    const now = new Date(); // Hora actual local
+    const now = new Date(); 
     const nowUtc = new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate(),
-                                      now.getHours(), now.getMinutes(), now.getSeconds())); // Hora actual UTC
+                                      now.getHours(), now.getMinutes(), now.getSeconds()));
 
-    if (actualTakenDate) { // Si ya se tomó
-        // Diferencia en milisegundos entre la toma real y la programada
-        // Si la toma real fue *antes* de la programada O hasta 1 hora *después*, es a tiempo.
-        // Más de 1 hora después, es con retraso.
+    if (actualTakenDate) { 
         const diffMs = actualTakenDate.getTime() - scheduledDate.getTime();
         const diffMinutes = diffMs / (1000 * 60);
 
-        if (diffMinutes <= 60) { // Dentro de 60 minutos (1 hora) después del tiempo programado
+        if (diffMinutes <= 60) { 
             return { status: 1, colorClass: 'dosis-blue', text: 'Tomada a tiempo' };
-        } else { // Más de 60 minutos después de lo programado
+        } else { 
             return { status: 2, colorClass: 'dosis-purple', text: 'Tomada con retraso' };
         }
-    } else { // Si no se ha tomado (status_code es 0 en DB)
-        // Si la hora programada ya pasó, sigue siendo gris (no tomada/omitida).
-        // Si la hora programada es futura, también es gris (pendiente).
+    } else { 
         if (scheduledDate.getTime() < nowUtc.getTime()) {
             return { status: 0, colorClass: 'dosis-gray', text: 'Pendiente (atrasada/omitida)' }; 
         } else {
@@ -48,19 +40,16 @@ function getDoseStatus(scheduledTimeIso, actualTakenTimeIso) {
     }
 }
 
-
 // =========================================================
-// === LÓGICA PRINCIPAL AL CARGAR EL DOM ===
+// === LÓGICA PRINCIPAL AL CARGAR EL DOM (modularizada por página) ===
 // =========================================================
 document.addEventListener('DOMContentLoaded', () => {
-    // Obtener el path de la URL actual para saber en qué página estamos
     const path = window.location.pathname;
     const isIndexPage = path.endsWith("index.html") || path === "/DAW-Pastillero/" || path === "/DAW-Pastillero/index.html";
     const isRegistroPage = path.endsWith("registro.html") || path === "/DAW-Pastillero/registro.html";
     const isListaPage = path.endsWith("lista.html") || path === "/DAW-Pastillero/lista.html";
     const isMonitoreoPage = path.endsWith("monitoreo.html") || path === "/DAW-Pastillero/monitoreo.html";
 
-    // Lógica de Depuración Global (mantener para visibilidad)
     const scriptStatusIndex = document.getElementById("scriptStatus");
     const scriptStatusRegistro = document.getElementById("scriptStatusRegistro");
     const scriptStatusLista = document.getElementById("scriptStatusLista");
@@ -68,7 +57,6 @@ document.addEventListener('DOMContentLoaded', () => {
     if (scriptStatusIndex) scriptStatusIndex.textContent = "Script principal ejecutándose en Index...";
     if (scriptStatusRegistro) scriptStatusRegistro.textContent = "Script principal ejecutándose en Registro...";
     if (scriptStatusLista) scriptStatusLista.textContent = "Script principal ejecutándose en Lista...";
-
 
     // -------------------------------------------------------------
     // LÓGICA ESPECÍFICA PARA INDEX.HTML (Login/Registro)
@@ -83,80 +71,35 @@ document.addEventListener('DOMContentLoaded', () => {
             loginBtn.addEventListener("click", () => {
                 const email = emailInput.value;
                 const password = passwordInput.value;
-
-                if (!email || !password) {
-                    alert("Por favor, ingresa correo y contraseña.");
-                    return;
-                }
-
+                if (!email || !password) { alert("Por favor, ingresa correo y contraseña."); return; }
                 signInWithEmailAndPassword(auth, email, password)
-                    .then((userCredential) => {
-                        console.log("Usuario ha iniciado sesión:", userCredential.user.email);
-                        window.location.href = "registro.html";
-                    })
-                    .catch(err => {
-                        alert("Error al iniciar sesión: " + err.message);
-                        console.error("Error de inicio de sesión:", err);
-                        if (scriptStatusIndex) {
-                            scriptStatusIndex.textContent = "Error de Login: " + err.message;
-                            scriptStatusIndex.style.color = 'red';
-                        }
-                    });
+                    .then(() => window.location.href = "registro.html")
+                    .catch(err => { alert("Error al iniciar sesión: " + err.message); console.error("Error de inicio de sesión:", err); if (scriptStatusIndex) { scriptStatusIndex.textContent = "Error de Login: " + err.message; scriptStatusIndex.style.color = 'red'; } });
             });
         }
-
         if (registerBtn) {
             registerBtn.addEventListener("click", () => {
                 const email = emailInput.value;
                 const password = passwordInput.value;
-
-                if (!email || !password) {
-                    alert("Por favor, ingresa correo y contraseña.");
-                    return;
-                }
-                if (password.length < 6) {
-                    alert("La contraseña debe tener al menos 6 caracteres.");
-                    return;
-                }
-
+                if (!email || !password) { alert("Por favor, ingresa correo y contraseña."); return; }
+                if (password.length < 6) { alert("La contraseña debe tener al menos 6 caracteres."); return; }
                 createUserWithEmailAndPassword(auth, email, password)
-                    .then((userCredential) => {
-                        alert("Registrado con éxito. ¡Ya puedes iniciar sesión!");
-                        console.log("Nuevo usuario registrado:", userCredential.user.email);
-                        if (scriptStatusIndex) {
-                            scriptStatusIndex.textContent = "Registro exitoso!";
-                            scriptStatusIndex.style.color = 'green';
-                        }
-                    })
-                    .catch(err => {
-                        alert("Error al registrarse: " + err.message);
-                        console.error("Error de registro:", err);
-                        if (scriptStatusIndex) {
-                            scriptStatusIndex.textContent = "Error de Registro: " + err.message;
-                            scriptStatusIndex.style.color = 'red';
-                        }
-                    });
+                    .then(() => alert("Registrado con éxito. ¡Ya puedes iniciar sesión!"))
+                    .catch(err => { alert("Error al registrarse: " + err.message); console.error("Error de registro:", err); if (scriptStatusIndex) { scriptStatusIndex.textContent = "Error de Registro: " + err.message; scriptStatusIndex.style.color = 'red'; } });
             });
         }
-    } // Cierre del if (isIndexPage)
+    }
 
     // -------------------------------------------------------------
     // LÓGICA ESPECÍFICA PARA REGISTRO.HTML
     // -------------------------------------------------------------
     if (isRegistroPage) {
         onAuthStateChanged(auth, (user) => {
-            if (!user) {
-                window.location.href = "index.html";
-                return;
-            }
-
+            if (!user) { window.location.href = "index.html"; return; }
             const guardarBtn = document.getElementById("guardarBtn");
-
             if (guardarBtn) {
                 guardarBtn.addEventListener("click", async () => {
                     const userId = user.uid;
-
-                    // Obtener referencias a los elementos input
                     const nombreInput = document.getElementById("nombre");
                     const horasInput = document.getElementById("horas");
                     const noComInput = document.getElementById("noCom");
@@ -164,7 +107,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     const fechaPrimeraInput = document.getElementById("fechaPrimera");
                     const horaPrimeraInput = document.getElementById("horaPrimera");
 
-                    // Obtener referencias a los divs de mensaje de error
                     const errNombre = document.getElementById("msj-nombre");
                     const errHoras = document.getElementById("msj-horas");
                     const errNoCom = document.getElementById("msj-noCom");
@@ -172,122 +114,56 @@ document.addEventListener('DOMContentLoaded', () => {
                     const errFecha = document.getElementById("msj-fecha");
                     const errHoraPrimera = document.getElementById("msj-horaP");
 
-                    // Limpiar errores previos
                     [nombreInput, horasInput, noComInput, dosisTotalInput, fechaPrimeraInput, horaPrimeraInput].forEach(e => e.classList.remove("incorrecto"));
-                    [errNombre, errHoras, errNoCom, errDosis, errFecha, errHoraPrimera].forEach(e => {
-                        e.textContent = "";
-                        e.style.display = "none";
-                    });
+                    [errNombre, errHoras, errNoCom, errDosis, errFecha, errHoraPrimera].forEach(e => { e.textContent = ""; e.style.display = "none"; });
 
-                    // Obtener los VALORES de los inputs
                     const nombre = nombreInput.value.trim();
-                    const horas = parseInt(horasInput.value.trim()); // Intervalo en horas
+                    const horas = parseInt(horasInput.value.trim());
                     const noCom = parseInt(noComInput.value.trim());
-                    const dosisTotal = parseInt(dosisTotalInput.value.trim()); // Cantidad total de dosis
-                    const fechaPrimeraStr = fechaPrimeraInput.value; // 'YYYY-MM-DD'
-                    const horaPrimeraStr = horaPrimeraInput.value;   // 'HH:MM'
+                    const dosisTotal = parseInt(dosisTotalInput.value.trim());
+                    const fechaPrimeraStr = fechaPrimeraInput.value;
+                    const horaPrimeraStr = horaPrimeraInput.value;
 
-                    // VALIDACIONES
-                    if (nombre === ""){          
-                        mostrarError(nombreInput,errNombre,"Este campo es obligatorio");
-                        return;
-                    }
+                    if (nombre === "") { mostrarError(nombreInput, errNombre, "Este campo es obligatorio"); return; }
+                    if (horasInput.value.trim() === "") { mostrarError(horasInput, errHoras, "Este campo es obligatorio"); return; } else if (isNaN(horas) || horas <= 0) { mostrarError(horasInput, errHoras, "Debe ingresar un número válido de horas (> 0)"); return; }
+                    if (noComInput.value.trim() === "") { mostrarError(noComInput, errNoCom, "Este campo es obligatorio"); return; } else if (isNaN(noCom) || noCom <= 0) { mostrarError(noComInput, errNoCom, "Debe ingresar un número de compartimiento válido (> 0)"); return; }
+                    if (dosisTotalInput.value.trim() === "") { mostrarError(dosisTotalInput, errDosis, "Este campo es obligatorio"); return; } else if (isNaN(dosisTotal) || dosisTotal <= 0) { mostrarError(dosisTotalInput, errDosis, "Debe ingresar una dosis total válida (> 0)"); return; }
+                    if (fechaPrimeraInput.value === "") { mostrarError(fechaPrimeraInput, errFecha, "Seleccione una fecha"); return; }
+                    if (horaPrimeraInput.value === "") { mostrarError(horaPrimeraInput, errHoraPrimera, "Seleccione una hora"); return; }
 
-                    if (horasInput.value.trim()===""){          
-                        mostrarError(horasInput,errHoras,"Este campo es obligatorio"); 
-                        return;          
-                    } else if (isNaN(horas) || horas <= 0){
-                        mostrarError(horasInput,errHoras,"Debe ingresar un número válido de horas (> 0)");
-                        return;
-                    }
-                    
-                    if (noComInput.value.trim()===""){          
-                        mostrarError(noComInput,errNoCom,"Este campo es obligatorio"); 
-                        return;        
-                    } else if (isNaN(noCom) || noCom <= 0){
-                        mostrarError(noComInput,errNoCom,"Debe ingresar un número de compartimiento válido (> 0)");
-                        return;
-                    }
-
-                    if (dosisTotalInput.value.trim()===""){          
-                        mostrarError(dosisTotalInput,errDosis,"Este campo es obligatorio");          
-                        return;
-                    } else if (isNaN(dosisTotal) || dosisTotal <= 0){
-                        mostrarError(dosisTotalInput,errDosis,"Debe ingresar una dosis total válida (> 0)");
-                        return;
-                    }
-
-                    if (fechaPrimeraInput.value === ""){          
-                        mostrarError(fechaPrimeraInput,errFecha,"Seleccione una fecha");
-                        return;
-                    }
-
-                    if (horaPrimeraInput.value === ""){          
-                        mostrarError(horaPrimeraInput,errHoraPrimera,"Seleccione una hora");
-                        return;
-                    }
-            
-                    // --- Lógica para PRE-CALCULAR TODAS LAS DOSIS ---
                     const [year, month, day] = fechaPrimeraStr.split('-').map(Number);
                     const [hour, minute] = horaPrimeraStr.split(':').map(Number);
-                    
-                    let currentDoseTime = new Date(Date.UTC(year, month - 1, day, hour, minute, 0)); // Hora UTC
+                    let currentDoseTime = new Date(Date.UTC(year, month - 1, day, hour, minute, 0));
 
-                    const dosisProgramadas = {}; // Objeto para almacenar todas las dosis programadas
-
-                    for (let i = 0; i < dosisTotal; i++) { // Iterar hasta dosisTotal
+                    const dosisProgramadas = {};
+                    for (let i = 0; i < dosisTotal; i++) {
                         const scheduledDoseIso = currentDoseTime.toISOString().substring(0, 19) + 'Z';
-                        
-                        // Guardar la dosis programada con su estado inicial
                         dosisProgramadas[scheduledDoseIso] = {
                             scheduled: scheduledDoseIso,
                             taken_at: null,
-                            status_code: 0 // 0 para pendiente
+                            status_code: 0
                         };
-
-                        // Calcular la siguiente toma: añadir el intervalo de horas
                         currentDoseTime.setUTCHours(currentDoseTime.getUTCHours() + horas);
                     }
-                    // --- DEBUGGING ---
+
                     console.log("Dosis programadas generadas en registro:", dosisProgramadas);
                     console.log("Número de dosis generadas:", Object.keys(dosisProgramadas).length);
-                    // --- FIN DEBUGGING ---
 
                     const data = {
-                        NombreMed: nombre,
-                        Horas: horas.toString(),
-                        NoCom: noCom.toString(),
-                        DosisTotal: dosisTotal.toString(),
-                        Nota: "",
-                        Dosis: dosisProgramadas // Todas las dosis pre-calculadas
+                        NombreMed: nombre, Horas: horas.toString(), NoCom: noCom.toString(),
+                        DosisTotal: dosisTotal.toString(), Nota: "", Dosis: dosisProgramadas
                     };
 
                     try {
-                        await set(ref(db, "DataBase/" + userId + "/Medicamentos/" + nombre), data); // Asegúrate de que la ruta 'DataBase' sea correcta
+                        await set(ref(db, "DataBase/" + userId + "/Medicamentos/" + nombre), data);
                         alert("Medicamento registrado con éxito! Todas las dosis programadas.");
-                        if (scriptStatusRegistro) {
-                            scriptStatusRegistro.textContent = "Medicamento guardado!";
-                            scriptStatusRegistro.style.color = 'greenyellow';
-                            scriptStatusRegistro.style.backgroundColor = "rgba(203, 255, 203, 0.60)";
-                        }
-                        // Limpiar el formulario
-                        nombreInput.value = "";
-                        horasInput.value = "";
-                        noComInput.value = "";
-                        dosisTotalInput.value = "";
-                        fechaPrimeraInput.value = "";
-                        horaPrimeraInput.value = "";
-
+                        if (scriptStatusRegistro) { scriptStatusRegistro.textContent = "Medicamento guardado!"; scriptStatusRegistro.style.color = 'greenyellow'; scriptStatusRegistro.style.backgroundColor = "rgba(203, 255, 203, 0.60)"; }
+                        nombreInput.value = ""; horasInput.value = ""; noComInput.value = ""; dosisTotalInput.value = "";
+                        fechaPrimeraInput.value = ""; horaPrimeraInput.value = "";
                         window.location.href = "lista.html";
-
                     } catch (err) {
-                        alert("Error al guardar medicamento: " + err.message);
-                        console.error("Error al guardar:", err);
-                        if (scriptStatusRegistro) {
-                            scriptStatusRegistro.textContent = "Error al guardar: " + err.message;
-                            scriptStatusRegistro.style.color = 'red';
-                            scriptStatusRegistro.style.backgroundColor = "rgba(255, 135, 135, 0.60)";
-                        }
+                        alert("Error al guardar medicamento: " + err.message); console.error("Error al guardar:", err);
+                        if (scriptStatusRegistro) { scriptStatusRegistro.textContent = "Error al guardar: " + err.message; scriptStatusRegistro.style.color = 'red'; scriptStatusRegistro.style.backgroundColor = "rgba(255, 135, 135, 0.60)"; }
                     }
                 });
             }
@@ -300,14 +176,11 @@ document.addEventListener('DOMContentLoaded', () => {
     if (isListaPage) {
         const lista = document.getElementById("lista");
 
-        // Función para cerrar todos los menús desplegables
         function closeAllMenus() {
             document.querySelectorAll('.options-menu.active').forEach(menu => {
                 menu.classList.remove('active');
             });
         }
-
-        // Cierra los menús si se hace clic fuera de ellos
         document.addEventListener('click', (event) => {
             if (!event.target.closest('.options-button') && !event.target.closest('.options-menu')) {
                 closeAllMenus();
@@ -315,472 +188,361 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         // =========================================================
-        // === INICIO DE LA LÓGICA DEL MODAL DE EDICIÓN Y SUS FUNCIONES ===
+        // === LÓGICA DEL MODAL DE EDICIÓN Y SUS FUNCIONES ===
+        // === INICIALIZACIÓN MÁS ROBUSTA ===
         // =========================================================
+        let editModal, closeButton, editNombreInput, editHorasInput, editNoComInput, editDosisTotalInput, saveEditBtn;
+        let currentEditingMedKey = null;
 
-        // Obtener referencias al modal y sus elementos
-        const editModal = document.getElementById("editModal");
-        // Verificar si el modal existe antes de intentar acceder a sus elementos
-        if (editModal) { // Solo si estamos en lista.html y el modal está en el HTML
-            const closeButton = editModal.querySelector(".close-button");
-            const editNombreInput = document.getElementById("editNombre");
-            const editHorasInput = document.getElementById("editHoras");
-            const editNoComInput = document.getElementById("editNoCom");
-            const editDosisTotalInput = document.getElementById("editDosisTotal");
-            const saveEditBtn = document.getElementById("saveEditBtn");
-
-            let currentEditingMedKey = null; // Para saber qué medicamento estamos editando
-
-            // Función para abrir el modal
-            function openEditModal(medData, medKey) {
+        // --- FUNCIONES DEL MODAL (Declaradas al inicio del scope isListaPage) ---
+        function openEditModal(medData, medKey) {
+            // Asegurarse de que el modal y sus inputs estén inicializados
+            if (editModal && editNombreInput && editHorasInput && editNoComInput && editDosisTotalInput) {
                 currentEditingMedKey = medKey;
                 editNombreInput.value = medData.NombreMed;
                 editHorasInput.value = medData.Horas;
                 editNoComInput.value = medData.NoCom;
                 editDosisTotalInput.value = medData.DosisTotal;
                 editModal.style.display = "flex"; // Usar flex para centrar
+            } else {
+                console.error("Modal de edición o sus elementos no encontrados. Asegúrate de que el HTML del modal esté en lista.html y tenga los IDs correctos.");
+                alert("Error: No se pudo abrir el formulario de edición. Intenta recargar la página.");
             }
+        }
 
-            // Función para cerrar el modal
-            function closeEditModal() {
+        function closeEditModal() {
+            if (editModal) {
                 editModal.style.display = "none";
                 currentEditingMedKey = null;
             }
+        }
 
-            // Eventos para cerrar el modal
-            closeButton.addEventListener('click', closeEditModal);
+        // --- INICIALIZACIÓN DE ELEMENTOS DEL MODAL Y SUS EVENTOS (Una vez que el DOM está listo) ---
+        // Se asegura que editModal exista antes de intentar acceder a sus propiedades
+        const modalElement = document.getElementById("editModal");
+        if (modalElement) {
+            editModal = modalElement; // Asignar a la variable de scope superior
+            closeButton = editModal.querySelector(".close-button");
+            editNombreInput = document.getElementById("editNombre");
+            editHorasInput = document.getElementById("editHoras");
+            editNoComInput = document.getElementById("editNoCom");
+            editDosisTotalInput = document.getElementById("editDosisTotal");
+            saveEditBtn = document.getElementById("saveEditBtn");
+
+            if (closeButton) closeButton.addEventListener('click', closeEditModal);
             window.addEventListener('click', (event) => {
-                if (event.target == editModal) {
-                    closeEditModal();
-                }
+                if (event.target === editModal) { closeEditModal(); }
             });
+            if (saveEditBtn) {
+                saveEditBtn.addEventListener('click', async () => {
+                    const user = auth.currentUser;
+                    if (!user || !currentEditingMedKey) return;
 
-            // Event listener para el botón "Guardar Cambios" del modal
-            saveEditBtn.addEventListener('click', async () => {
-                const user = auth.currentUser;
-                if (!user || !currentEditingMedKey) return;
+                    const newNombre = editNombreInput.value.trim();
+                    const newHoras = parseInt(editHorasInput.value.trim());
+                    const newNoCom = parseInt(editNoComInput.value.trim());
+                    const newDosisTotal = parseInt(editDosisTotalInput.value.trim());
 
-                const newNombre = editNombreInput.value.trim();
-                const newHoras = parseInt(editHorasInput.value.trim());
-                const newNoCom = parseInt(editNoComInput.value.trim());
-                const newDosisTotal = parseInt(editDosisTotalInput.value.trim());
-
-                // Validación básica (puedes añadir más)
-                if (!newNombre || isNaN(newHoras) || isNaN(newNoCom) || isNaN(newDosisTotal) || newHoras <=0 || newNoCom <=0 || newDosisTotal <=0) {
-                    alert("Por favor, rellena todos los campos del formulario de edición correctamente.");
-                    return;
-                }
-
-                const medRef = ref(db, `DataBase/${user.uid}/Medicamentos/${currentEditingMedKey}`);
-                try {
-                    // Si el nombre del medicamento cambia, es un poco más complejo:
-                    // hay que borrar el viejo y crear uno nuevo con el nuevo nombre
-                    if (newNombre !== currentEditingMedKey) {
-                        // Obtener los datos actuales para no perder Dosis y Nota
-                        const snapshot = await get(medRef);
-                        const oldMedData = snapshot.val();
-                        
-                        // NOTA: Al cambiar el nombre, si la lógica de DosisTotal/Horas es diferente,
-                        // la estructura Dosis debería ser recalculada. Aquí, por simplicidad,
-                        // si el nombre cambia, se asume un nuevo registro y se copian las dosis existentes.
-                        // Para un sistema robusto, se debería recalcular Dosis si Horas o DosisTotal cambian.
-                        const newMedData = {
-                            NombreMed: newNombre,
-                            Horas: newHoras.toString(),
-                            NoCom: newNoCom.toString(),
-                            DosisTotal: newDosisTotal.toString(),
-                            Nota: oldMedData.Nota || "", 
-                            Dosis: oldMedData.Dosis || {} // Mantiene las dosis existentes. Ojo: podría no ser coherente si DosisTotal/Horas cambian.
-                        };
-                        
-                        await remove(medRef); // Eliminar el medicamento con el nombre antiguo
-                        await set(ref(db, `DataBase/${user.uid}/Medicamentos/${newNombre}`), newMedData); // Guardar con el nuevo nombre
-                    } else {
-                        // Si el nombre no cambia, solo actualizamos los campos modificados
-                        await update(medRef, {
-                            NombreMed: newNombre,
-                            Horas: newHoras.toString(),
-                            NoCom: newNoCom.toString(),
-                            DosisTotal: newDosisTotal.toString()
-                        });
+                    if (!newNombre || isNaN(newHoras) || isNaN(newNoCom) || isNaN(newDosisTotal) || newHoras <= 0 || newNoCom <= 0 || newDosisTotal <= 0) {
+                        alert("Por favor, rellena todos los campos del formulario de edición correctamente."); return;
                     }
-                    
-                    alert("Medicamento actualizado con éxito!");
-                    closeEditModal();
-                    cargarMedicamentos(user.uid); // Recargar la lista
-                } catch (error) {
-                    alert("Error al actualizar medicamento: " + error.message);
-                    console.error("Error al actualizar:", error);
-                }
-            });
-        } // Fin if (editModal)
 
+                    const medRef = ref(db, `DataBase/${user.uid}/Medicamentos/${currentEditingMedKey}`);
+                    try {
+                        if (newNombre !== currentEditingMedKey) {
+                            const snapshot = await get(medRef);
+                            const oldMedData = snapshot.val();
+                            const newMedData = {
+                                NombreMed: newNombre, Horas: newHoras.toString(), NoCom: newNoCom.toString(),
+                                DosisTotal: newDosisTotal.toString(), Nota: oldMedData.Nota || "", Dosis: oldMedData.Dosis || {}
+                            };
+                            await remove(medRef);
+                            await set(ref(db, `DataBase/${user.uid}/Medicamentos/${newNombre}`), newMedData);
+                        } else {
+                            await update(medRef, {
+                                NombreMed: newNombre, Horas: newHoras.toString(),
+                                NoCom: newNoCom.toString(), DosisTotal: newDosisTotal.toString()
+                            });
+                        }
+                        alert("Medicamento actualizado con éxito!");
+                        closeEditModal();
+                        cargarMedicamentos(user.uid);
+                    } catch (error) {
+                        alert("Error al actualizar medicamento: " + error.message); console.error("Error al actualizar:", error);
+                    }
+                });
+            }
+        } else {
+            console.warn("Elemento 'editModal' no encontrado en lista.html. La funcionalidad de edición no estará disponible.");
+        }
         // =========================================================
         // === FIN DE LA LÓGICA DEL MODAL DE EDICIÓN ===
         // =========================================================
 
 
         // Función para registrar que se tomó una dosis
-        async function registrarDosisTomada(userId, medicamentoNombre) { 
+        async function registrarDosisTomada(userId, medicamentoNombre) {
             const user = auth.currentUser;
-            if (!user) {
-                alert("Debe iniciar sesión para registrar dosis.");
-                window.location.href = "index.html";
-                return;
-            }
-
+            if (!user) { alert("Debe iniciar sesión para registrar dosis."); window.location.href = "index.html"; return; }
             const medRef = ref(db, "DataBase/" + userId + "/Medicamentos/" + medicamentoNombre);
             try {
                 const snapshot = await get(medRef);
-                if (!snapshot.exists()) {
-                    alert("Medicamento no encontrado.");
-                    return;
-                }
+                if (!snapshot.exists()) { alert("Medicamento no encontrado."); return; }
                 const medData = snapshot.val();
                 let { Dosis, DosisTotal } = medData;
                 DosisTotal = parseInt(DosisTotal);
 
-                // --- Lógica para encontrar la dosis pendiente y actualizarla ---
-                let targetScheduledIso = null; // La clave de la dosis a actualizar
-
-                // Obtener todas las dosis y ordenarlas por tiempo programado
+                let targetScheduledIso = null;
                 const dosisEntries = Object.entries(Dosis || {}).sort((a,b) => new Date(a[0]).getTime() - new Date(b[0]).getTime()); 
-                const now = new Date(); // Hora actual de la toma
-                const nowUtc = new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate(),
-                                                  now.getHours(), now.getMinutes(), now.getSeconds())); // Hora actual UTC
+                const now = new Date();
+                const nowUtc = new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate(), now.getHours(), now.getMinutes(), now.getSeconds()));
 
-                // Buscar la primera dosis pendiente (status_code: 0) que sea la "siguiente" a tomar
-                // Esto es, la más antigua que no se haya tomado, o la primera futura si todas las pasadas ya se tomaron.
                 for (const [scheduledIso, doseObj] of dosisEntries) {
-                    if (doseObj.status_code === 0) { // Si está pendiente
-                        targetScheduledIso = scheduledIso;
-                        break; // Encontramos la primera pendiente
-                    }
+                    if (doseObj.status_code === 0) { targetScheduledIso = scheduledIso; break; }
                 }
-                
-                // Si no se encontró ninguna dosis pendiente, puede que todas se hayan tomado
                 if (!targetScheduledIso) {
                     const dosesTakenCount = Object.values(Dosis).filter(d => d.status_code === 1 || d.status_code === 2).length;
-                    if (dosesTakenCount >= DosisTotal) {
-                         alert("Todas las dosis de " + medicamentoNombre + " ya han sido registradas.");
-                    } else {
-                         // Esto no debería pasar si DosisTotal se precalcula y no todas han sido tomadas.
-                         alert("No se encontró una dosis pendiente para registrar.");
-                    }
+                    if (dosesTakenCount >= DosisTotal) { alert("Todas las dosis de " + medicamentoNombre + " ya han sido registradas."); }
+                    else { alert("No se encontró una dosis pendiente para registrar."); }
                     return;
                 }
 
-                // Obtener el objeto de la dosis a actualizar
                 const targetDoseObj = Dosis[targetScheduledIso];
                 const scheduledDate = new Date(targetDoseObj.scheduled);
 
-                // Determinar el status_code (1: a tiempo, 2: retraso)
                 let newStatusCode = 0;
-                const diffMs = nowUtc.getTime() - scheduledDate.getTime(); // Diferencia entre toma real y programada
+                const diffMs = nowUtc.getTime() - scheduledDate.getTime();
                 const diffMinutes = diffMs / (1000 * 60);
 
-                if (diffMinutes <= 60) { // Tomada dentro de 60 minutos (1 hora) después de lo programado (o antes)
-                    newStatusCode = 1; // A tiempo
-                } else {
-                    newStatusCode = 2; // Con retraso
-                }
+                if (diffMinutes <= 60) { newStatusCode = 1; } else { newStatusCode = 2; }
 
-                // Construir las actualizaciones
                 const updates = {};
                 const dosePath = `DataBase/${userId}/Medicamentos/${medicamentoNombre}/Dosis/${targetScheduledIso}`;
                 updates[dosePath + '/taken_at'] = nowUtc.toISOString().substring(0, 19) + 'Z';
                 updates[dosePath + '/status_code'] = newStatusCode;
-                
-                // Aplicar todas las actualizaciones a la base de datos
+
                 await update(ref(db, '/'), updates);
 
                 alert(`Dosis de ${medicamentoNombre} registrada con éxito! Estado: ${newStatusCode === 1 ? 'A tiempo' : 'Con retraso'}.`);
-                cargarMedicamentos(userId); // Recargar la lista después de la operación
-                if (scriptStatusLista) {
-                    scriptStatusLista.textContent = `Dosis de ${medicamentoNombre} registrada!`;
-                    scriptStatusLista.style.color = 'yellowgreen';
-                }
+                cargarMedicamentos(userId);
+                if (scriptStatusLista) { scriptStatusLista.textContent = `Dosis de ${medicamentoNombre} registrada!`; scriptStatusLista.style.color = 'yellowgreen'; }
 
             } catch (error) {
-                alert("Error al registrar dosis: " + error.message);
-                console.error("Error al registrar dosis:", error);
-                if (scriptStatusLista) {
-                    scriptStatusLista.textContent = "Error al registrar dosis: " + error.message;
-                    scriptStatusLista.style.color = 'red';
-                }
+                alert("Error al registrar dosis: " + error.message); console.error("Error al registrar dosis:", error);
+                if (scriptStatusLista) { scriptStatusLista.textContent = "Error al registrar dosis: " + error.message; scriptStatusLista.style.color = 'red'; }
             }
         }
 
-        // Función para cargar y mostrar medicamentos
-        async function cargarMedicamentos(userId) {
-            const medRef = ref(db, "DataBase/" + userId + "/Medicamentos"); // Asegúrate de que esta ruta sea correcta
-            lista.innerHTML = ""; // Limpiar la lista antes de cargar
+        // Función para cargar y mostrar medicamentos
+        async function cargarMedicamentos(userId) {
+            const medRef = ref(db, "DataBase/" + userId + "/Medicamentos");
+            lista.innerHTML = "";
 
-            try {
-                const snapshot = await get(medRef);
-                if (snapshot.exists()) {
-                    const datos = snapshot.val();
-                    const now = new Date(); // Hora actual local
-                    const nowUtc = new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate(),
-                                                      now.getHours(), now.getMinutes(), now.getSeconds())); // Hora actual UTC
+            try {
+                const snapshot = await get(medRef);
+                if (snapshot.exists()) {
+                    const datos = snapshot.val();
+                    const now = new Date();
+                    const nowUtc = new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate(), now.getHours(), now.getMinutes(), now.getSeconds()));
 
-                    for (let medKey in datos) {
-                        const med = datos[medKey];
+                    for (let medKey in datos) {
+                        const med = datos[medKey];
 
-                        const li = document.createElement("li");
-                        li.classList.add("medicamento-item"); // Añadir clase para estilos
+                        const li = document.createElement("li");
+                        li.classList.add("medicamento-item");
 
-                        // Header para el título y el botón de opciones
-                        const medHeader = document.createElement("div");
-                        medHeader.classList.add("medicamento-header");
+                        const medHeader = document.createElement("div");
+                        medHeader.classList.add("medicamento-header");
 
-                        const titleMed = document.createElement("h3");
-                        titleMed.textContent = med.NombreMed;
-                        medHeader.appendChild(titleMed);
+                        const titleMed = document.createElement("h3");
+                        titleMed.textContent = med.NombreMed;
+                        medHeader.appendChild(titleMed);
 
-                        // Botón de opciones (tres puntos)
-                        const optionsButton = document.createElement("button");
-                        optionsButton.classList.add("options-button");
-                        optionsButton.textContent = '...'; // Tres puntos Unicode o ASCII
-                        optionsButton.dataset.medKey = medKey; // Guardar la clave del medicamento
-                        optionsButton.addEventListener('click', (event) => {
-                            event.stopPropagation(); // Evitar que el clic se propague al documento
-                            closeAllMenus(); // Cierra otros menús abiertos
+                        const optionsButton = document.createElement("button");
+                        optionsButton.classList.add("options-button");
+                        optionsButton.textContent = '...';
+                        optionsButton.dataset.medKey = medKey;
+                        optionsButton.addEventListener('click', (event) => {
+                            event.stopPropagation();
+                            closeAllMenus();
+                            const listItem = event.target.closest('.medicamento-item');
+                            if (listItem) {
+                                const menu = listItem.querySelector('.options-menu');
+                                if (menu) { menu.classList.toggle('active'); }
+                            }
+                        });
+                        medHeader.appendChild(optionsButton);
+                        li.appendChild(medHeader);
 
+                        const optionsMenu = document.createElement("div");
+                        optionsMenu.classList.add("options-menu");
 
-                            const listItem = event.target.closest('.medicamento-item'); // Encuentra el li padre
-                            if (listItem) {
-                            const menu = listItem.querySelector('.options-menu'); // Busca el menú dentro de ese li
-                            if (menu) {
-                                menu.classList.toggle('active'); // Alternar visibilidad
-                                }
-                            }
-                        });
-                        medHeader.appendChild(optionsButton);
-                        li.appendChild(medHeader); // medHeader se añade a li
+                        const editBtn = document.createElement("button");
+                        editBtn.textContent = "Editar";
+                        editBtn.addEventListener('click', () => {
+                            closeAllMenus();
+                            openEditModal(med, medKey); // openEditModal ahora está en el scope correcto
+                        });
+                        optionsMenu.appendChild(editBtn);
 
-                        // Menú desplegable
-                        const optionsMenu = document.createElement("div");
-                        optionsMenu.classList.add("options-menu");
+                        const deleteBtn = document.createElement("button");
+                        deleteBtn.textContent = "Borrar";
+                        deleteBtn.addEventListener('click', async () => {
+                            if (confirm("¿Estás seguro de que quieres borrar " + med.NombreMed + "?")) {
+                                try {
+                                    await remove(ref(db, `DataBase/${userId}/Medicamentos/${medKey}`));
+                                    alert(med.NombreMed + " borrado con éxito.");
+                                    cargarMedicamentos(userId);
+                                    closeAllMenus();
+                                } catch (error) {
+                                    alert("Error al borrar medicamento: " + error.message);
+                                    console.error("Error al borrar:", error);
+                                }
+                            }
+                        });
+                        optionsMenu.appendChild(deleteBtn);
 
-                        const editBtn = document.createElement("button");
-                        editBtn.textContent = "Editar";
-                        editBtn.addEventListener('click', () => {
-                            closeAllMenus();
-                            // Llama a la función para abrir el modal, pasándole los datos del medicamento
-                            // Asegúrate de que openEditModal esté disponible en este scope.
-                            if (typeof openEditModal === 'function') { // Verificación extra
-                                openEditModal(med, medKey); // `med` es el objeto medicamento actual, `medKey` es su nombre
-                            } else {
-                                alert("Error: Función de edición no disponible.");
-                                console.error("openEditModal no está definida en este contexto.");
-                            }
-                        });
-                        optionsMenu.appendChild(editBtn);
+                        const takeDoseBtn = document.createElement("button");
+                        takeDoseBtn.textContent = "Dosis tomada";
+                        takeDoseBtn.addEventListener('click', async () => {
+                            closeAllMenus();
+                            await registrarDosisTomada(userId, medKey);
+                        });
+                        optionsMenu.appendChild(takeDoseBtn);
 
-                        const deleteBtn = document.createElement("button");
-                        deleteBtn.textContent = "Borrar";
-                        deleteBtn.addEventListener('click', async () => {
-                            if (confirm("¿Estás seguro de que quieres borrar " + med.NombreMed + "?")) {
-                                try {
-                                    await remove(ref(db, `DataBase/${userId}/Medicamentos/${medKey}`));
-                                    alert(med.NombreMed + " borrado con éxito.");
-                                    cargarMedicamentos(userId); // Recargar la lista
-                                    closeAllMenus();
-                                } catch (error) {
-                                    alert("Error al borrar medicamento: " + error.message);
-                                    console.error("Error al borrar:", error);
-                                }
-                            }
-                        });
-                        optionsMenu.appendChild(deleteBtn);
+                        const monitorBtn = document.createElement("button");
+                        monitorBtn.textContent = "Ver Monitoreo";
+                        monitorBtn.addEventListener('click', () => {
+                            window.location.href = "monitoreo.html";
+                            closeAllMenus();
+                        });
+                        optionsMenu.appendChild(monitorBtn);
+                        li.appendChild(optionsMenu);
 
-                        const takeDoseBtn = document.createElement("button");
-                        takeDoseBtn.textContent = "Dosis tomada";
-                        takeDoseBtn.addEventListener('click', async () => {
-                            closeAllMenus();
-                            await registrarDosisTomada(userId, medKey); // Ya no necesitamos 'dosisPrevias'
-                        });
-                        optionsMenu.appendChild(takeDoseBtn);
+                        const medInfoHoras = document.createElement("p");
+                        medInfoHoras.textContent = `Cada ${med.Horas} hrs`;
+                        li.appendChild(medInfoHoras);
 
-                        // Enlace a la nueva página de monitoreo
-                        const monitorBtn = document.createElement("button");
-                        monitorBtn.textContent = "Ver Monitoreo";
-                        monitorBtn.addEventListener('click', () => {
-                            window.location.href = "monitoreo.html"; // Redirige a la página de monitoreo
-                            closeAllMenus();
-                        });
-                        optionsMenu.appendChild(monitorBtn);
+                        const medInfoCompartimiento = document.createElement("p");
+                        medInfoCompartimiento.textContent = `Compartimiento No. ${med.NoCom}`;
+                        li.appendChild(medInfoCompartimiento);
 
-                        li.appendChild(optionsMenu);
+                        const medInfoProximaDosis = document.createElement("p");
+                        let proximaDosisTexto = "Próxima dosis: No programada";
 
-                        // Información del medicamento (debajo del header)
-                        const medInfoHoras = document.createElement("p");
-                        medInfoHoras.textContent = `Cada ${med.Horas} hrs`;
-                        li.appendChild(medInfoHoras);
+                        if (med.Dosis) {
+                            const dosisEntries = Object.entries(med.Dosis).sort((a,b) => new Date(a[0]).getTime() - new Date(b[0]).getTime());
+                            let proximaDosisEncontrada = null;
 
-                        const medInfoCompartimiento = document.createElement("p");
-                        medInfoCompartimiento.textContent = `Compartimiento No. ${med.NoCom}`;
-                        li.appendChild(medInfoCompartimiento);
+                            for (const [scheduledIso, doseObj] of dosisEntries) {
+                                const scheduledDate = new Date(scheduledIso);
+                                if (doseObj.status_code === 0 && scheduledDate.getTime() >= nowUtc.getTime() - (5 * 60 * 1000)) {
+                                    proximaDosisEncontrada = scheduledDate;
+                                    break;
+                                }
+                            }
+                            if (proximaDosisEncontrada) {
+                                const displayHour = String(proximaDosisEncontrada.getHours()).padStart(2, '0');
+                                const displayMinute = String(proximaDosisEncontrada.getMinutes()).padStart(2, '0');
+                                const displayDay = String(proximaDosisEncontrada.getDate()).padStart(2, '0');
+                                const displayMonth = String(proximaDosisEncontrada.getMonth() + 1).padStart(2, '0');
+                                const displayYear = proximaDosisEncontrada.getFullYear();
+                                proximaDosisTexto = `Próxima dosis: ${displayHour}:${displayMinute} ${displayDay}/${displayMonth}/${displayYear}`;
+                            } else {
+                                const dosesTakenCount = Object.values(med.Dosis).filter(d => d.status_code === 1 || d.status_code === 2).length;
+                                if (dosesTakenCount >= parseInt(med.DosisTotal)) { proximaDosisTexto = "Todas las dosis completadas."; }
+                                else {
+                                    proximaDosisTexto = "Próxima dosis: ¡Dosis atrasada!";
+                                    const firstMissedDose = dosisEntries.find(([iso, obj]) => obj.status_code === 0 && new Date(iso).getTime() < nowUtc.getTime());
+                                    if (firstMissedDose) {
+                                        const missedDate = new Date(firstMissedDose[0]);
+                                        const displayHour = String(missedDate.getHours()).padStart(2, '0');
+                                        const displayMinute = String(missedDate.getMinutes()).padStart(2, '0');
+                                        const displayDay = String(missedDate.getDate()).padStart(2, '0');
+                                        const displayMonth = String(missedDate.getMonth() + 1).padStart(2, '0');
+                                        const displayYear = missedDate.getFullYear();
+                                        proximaDosisTexto += ` (${displayHour}:${displayMinute} ${displayDay}/${displayMonth}/${displayYear})`;
+                                    }
+                                }
+                            }
+                        } else { proximaDosisTexto = "No hay dosis programadas."; }
 
-                        const medInfoProximaDosis = document.createElement("p");
-                        let proximaDosisTexto = "Próxima dosis: No programada";
+                        medInfoProximaDosis.textContent = proximaDosisTexto;
+                        li.appendChild(medInfoProximaDosis);
+                        lista.appendChild(li);
+                    }
+                } else { lista.innerHTML = "<li>No hay medicamentos registrados.</li>"; }
+                if (scriptStatusLista) { scriptStatusLista.textContent = "Medicamentos cargados!"; scriptStatusLista.style.color = 'yellowgreen'; }
+            } catch (err) {
+                console.error("Error al cargar medicamentos:", err);
+                if (scriptStatusLista) { scriptStatusLista.textContent = "Error al cargar meds: " + err.message; scriptStatusLista.style.color = 'red'; }
+            }
+        }
 
-                        if (med.Dosis) {
-                            const dosisEntries = Object.entries(med.Dosis).sort((a,b) => new Date(a[0]).getTime() - new Date(b[0]).getTime()); // Ordenar por fecha programada
-                            let proximaDosisEncontrada = null;
+        onAuthStateChanged(auth, (user) => {
+            if (user) { cargarMedicamentos(user.uid); } else { window.location.href = "index.html"; }
+        });
+    }
 
-                            // Buscar la primera dosis pendiente (status_code: 0) cuyo scheduled time sea futuro o actual
-                            for (const [scheduledIso, doseObj] of dosisEntries) {
-                                const scheduledDate = new Date(scheduledIso);
-                                if (doseObj.status_code === 0 && scheduledDate.getTime() >= nowUtc.getTime() - (5 * 60 * 1000)) { // Dar 5 min de margen
-                                    proximaDosisEncontrada = scheduledDate;
-                                    break;
-                                }
-                            }
-                            
-                            if (proximaDosisEncontrada) {
-                                const displayHour = String(proximaDosisEncontrada.getHours()).padStart(2, '0');
-                                const displayMinute = String(proximaDosisEncontrada.getMinutes()).padStart(2, '0');
-                                const displayDay = String(proximaDosisEncontrada.getDate()).padStart(2, '0');
-                                const displayMonth = String(proximaDosisEncontrada.getMonth() + 1).padStart(2, '0');
-                                const displayYear = proximaDosisEncontrada.getFullYear();
-                                proximaDosisTexto = `Próxima dosis: ${displayHour}:${displayMinute} ${displayDay}/${displayMonth}/${displayYear}`;
-                            } else {
-                                // Si no hay dosis futuras pendientes, verificar si todas las dosis han sido tomadas
-                                const dosesTakenCount = Object.values(med.Dosis).filter(d => d.status_code === 1 || d.status_code === 2).length;
-                                if (dosesTakenCount >= parseInt(med.DosisTotal)) {
-                                    proximaDosisTexto = "Todas las dosis completadas.";
-                                } else {
-                                    // Esto ocurriría si hay dosis pendientes, pero todas están en el pasado.
-                                    proximaDosisTexto = "Próxima dosis: ¡Dosis atrasada!";
-                                    
-                                    // Opcional: mostrar la dosis atrasada más próxima
-                                    const firstMissedDose = dosisEntries.find(([iso, obj]) => obj.status_code === 0 && new Date(iso).getTime() < nowUtc.getTime());
-                                    if (firstMissedDose) {
-                                        const missedDate = new Date(firstMissedDose[0]);
-                                        const displayHour = String(missedDate.getHours()).padStart(2, '0');
-                                        const displayMinute = String(missedDate.getMinutes()).padStart(2, '0');
-                                        const displayDay = String(missedDate.getDate()).padStart(2, '0');
-                                        const displayMonth = String(missedDate.getMonth() + 1).padStart(2, '0');
-                                        const displayYear = missedDate.getFullYear();
-                                        proximaDosisTexto += ` (${displayHour}:${displayMinute} ${displayDay}/${displayMonth}/${displayYear})`;
-                                    }
-                                }
-                            }
-                        } else {
-                            proximaDosisTexto = "No hay dosis programadas.";
-                        }
-                        
-                        medInfoProximaDosis.textContent = proximaDosisTexto;
-                        li.appendChild(medInfoProximaDosis);
-                        
-                        lista.appendChild(li);
-                    }
-                } else {
-                    lista.innerHTML = "<li>No hay medicamentos registrados.</li>";
-                }
-                if (scriptStatusLista) {
-                    scriptStatusLista.textContent = "Medicamentos cargados!";
-                    scriptStatusLista.style.color = 'yellowgreen';
-                }
-            } catch (err) {
-                console.error("Error al cargar medicamentos:", err);
-                if (scriptStatusLista) {
-                    scriptStatusLista.textContent = "Error al cargar meds: " + err.message;
-                    scriptStatusLista.style.color = 'red';
-                }
-            }
-        }
+    // -------------------------------------------------------------
+    // LÓGICA ESPECÍFICA PARA MONITOREO.HTML
+    // -------------------------------------------------------------
+    if (isMonitoreoPage) {
+        const monitoreoContainer = document.getElementById("monitoreo-lista");
+        onAuthStateChanged(auth, async (user) => {
+            if (!user) { window.location.href = "index.html"; return; }
+            const userId = user.uid;
+            const medRef = ref(db, `DataBase/${userId}/Medicamentos`);
+            monitoreoContainer.innerHTML = "";
 
-        // Cargar medicamentos al iniciar la página de lista
-        onAuthStateChanged(auth, (user) => {
-            if (user) {
-                cargarMedicamentos(user.uid);
-            } else {
-                window.location.href = "index.html";
-            }
-        });
-    } // Cierre del if (isListaPage)
+            try {
+                const snapshot = await get(medRef);
+                if (snapshot.exists()) {
+                    const medicamentos = snapshot.val();
+                    for (let medKey in medicamentos) {
+                        const med = medicamentos[medKey];
+                        console.log(`Monitoreando ${med.NombreMed}. DosisTotal: ${med.DosisTotal}`);
+                        console.log(`Dosis en DB para ${med.NombreMed}:`, med.Dosis);
+                        console.log(`Número de entradas en Dosis:`, med.Dosis ? Object.keys(med.Dosis).length : 0);
 
-    // -------------------------------------------------------------
-    // LÓGICA ESPECÍFICA PARA MONITOREO.HTML
-    // -------------------------------------------------------------
-    if (isMonitoreoPage) {
-        const monitoreoContainer = document.getElementById("monitoreo-lista"); // Asume un ul/div en monitoreo.html
-        
-        onAuthStateChanged(auth, async (user) => {
-            if (!user) {
-                window.location.href = "index.html";
-                return;
-            }
+                        const medItemDiv = document.createElement("div");
+                        medItemDiv.classList.add("medicamento-container");
 
-            const userId = user.uid;
-            const medRef = ref(db, `DataBase/${userId}/Medicamentos`);
+                        const medTitle = document.createElement("h2");
+                        medTitle.classList.add("medicamento-title");
+                        medTitle.textContent = med.NombreMed;
+                        medItemDiv.appendChild(medTitle);
 
-            monitoreoContainer.innerHTML = ""; // Limpiar la lista al cargar
+                        const dosisRow = document.createElement("div");
+                        dosisRow.classList.add("dosis-row");
 
-            try {
-                const snapshot = await get(medRef);
-                if (snapshot.exists()) {
-                    const medicamentos = snapshot.val();
-                    // const now = new Date(); // Ya se obtiene en getDoseStatus
-                    // const nowUtc = new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate(),
-                    //                                   now.getHours(), now.getMinutes(), now.getSeconds())); // Ya se obtiene en getDoseStatus
+                        if (med.Dosis) {
+                            const dosisEntries = Object.entries(med.Dosis).sort((a,b) => new Date(a[0]).getTime() - new Date(b[0]).getTime());
 
-                    for (let medKey in medicamentos) {
-                        const med = medicamentos[medKey];
-                        // --- DEBUGGING ---
-                        console.log(`Monitoreando ${med.NombreMed}. DosisTotal: ${med.DosisTotal}`);
-                        console.log(`Dosis en DB para ${med.NombreMed}:`, med.Dosis);
-                        console.log(`Número de entradas en Dosis:`, med.Dosis ? Object.keys(med.Dosis).length : 0);
-                        // --- FIN DEBUGGING ---
+                            for (const [scheduledIso, doseObj] of dosisEntries) {
+                                const dosisCircle = document.createElement("div");
+                                dosisCircle.classList.add("dosis-circle");
 
-                        const medItemDiv = document.createElement("div");
-                        medItemDiv.classList.add("medicamento-container"); // Usar clase de estilo de monitoreo
+                                const { colorClass, text } = getDoseStatus(scheduledIso, doseObj.taken_at);
+                                dosisCircle.classList.add(colorClass);
+                                dosisCircle.title = `${med.NombreMed}\nProgramada: ${new Date(scheduledIso).toLocaleString()}\nEstado: ${text}`; 
 
-                        const medTitle = document.createElement("h2");
-                        medTitle.classList.add("medicamento-title");
-                        medTitle.textContent = med.NombreMed;
-                        medItemDiv.appendChild(medTitle);
-
-                        const dosisRow = document.createElement("div");
-                        dosisRow.classList.add("dosis-row");
-
-                        if (med.Dosis) {
-                            // Obtener todas las dosis (keys son las fechas programadas) y ordenarlas
-                            const dosisEntries = Object.entries(med.Dosis).sort((a,b) => new Date(a[0]).getTime() - new Date(b[0]).getTime());
-
-                            for (const [scheduledIso, doseObj] of dosisEntries) {
-                                const dosisCircle = document.createElement("div");
-                                dosisCircle.classList.add("dosis-circle");
-
-                                // Usar la función auxiliar para determinar el color
-                                const { colorClass, text } = getDoseStatus(scheduledIso, doseObj.taken_at);
-                                dosisCircle.classList.add(colorClass);
-                                // Tooltip para más información
-                                dosisCircle.title = `${med.NombreMed}\nProgramada: ${new Date(scheduledIso).toLocaleString()}\nEstado: ${text}`; 
-
-                                dosisRow.appendChild(dosisCircle);
-                            }
-                        } else {
-                            const noDosesText = document.createElement('p');
-                            noDosesText.textContent = 'No hay dosis programadas para este medicamento.';
-                            dosisRow.appendChild(noDosesText);
-                        }
-                        
-                        medItemDiv.appendChild(dosisRow);
-                        monitoreoContainer.appendChild(medItemDiv);
-                    }
-                } else {
-                    monitoreoContainer.innerHTML = "<p>No hay medicamentos registrados para monitorear.</p>";
-                }
-            } catch (error) {
-                console.error("Error al cargar monitoreo:", error);
-                monitoreoContainer.innerHTML = `<p style="color:red;">Error al cargar el monitoreo: ${error.message}</p>`;
-            }
-        });
-    } // Cierre del if (isMonitoreoPage)
-
+                                dosisRow.appendChild(dosisCircle);
+                            }
+                        } else {
+                            const noDosesText = document.createElement('p');
+                            noDosesText.textContent = 'No hay dosis programadas para este medicamento.';
+                            dosisRow.appendChild(noDosesText);
+                        }
+                        medItemDiv.appendChild(dosisRow);
+                        monitoreoContainer.appendChild(medItemDiv);
+                    }
+                } else { monitoreoContainer.innerHTML = "<p>No hay medicamentos registrados para monitorear.</p>"; }
+            } catch (error) {
+                console.error("Error al cargar monitoreo:", error);
+                monitoreoContainer.innerHTML = `<p style="color:red;">Error al cargar el monitoreo: ${error.message}</p>`;
+            }
+        });
+    }
 
 }); // Cierre del document.addEventListener('DOMContentLoaded')
