@@ -192,12 +192,21 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+
+
+
+
+
+
+
+
+
+
     // -------------------------------------------------------------
     // LÓGICA ESPECÍFICA PARA LISTA.HTML
     // -------------------------------------------------------------
     if (isListaPage) {
         const lista = document.getElementById("lista");
-        const logoutBtn = document.getElementById("logoutBtn"); // Obtener referencia al nuevo botón
 
         function closeAllMenus() {
             document.querySelectorAll('.options-menu.active').forEach(menu => {
@@ -219,14 +228,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // --- FUNCIONES DEL MODAL (Declaradas al inicio del scope isListaPage) ---
         function openEditModal(medData, medKey) {
-            // Asegurarse de que el modal y sus inputs estén inicializados
             if (editModal && editNombreInput && editHorasInput && editNoComInput && editDosisTotalInput) {
                 currentEditingMedKey = medKey;
                 editNombreInput.value = medData.NombreMed;
                 editHorasInput.value = medData.Horas;
                 editNoComInput.value = medData.NoCom;
                 editDosisTotalInput.value = medData.DosisTotal;
-                editModal.style.display = "flex"; // Usar flex para centrar
+                editModal.style.display = "flex";
             } else {
                 console.error("Modal de edición o sus elementos no encontrados. Asegúrate de que el HTML del modal esté en lista.html y tenga los IDs correctos.");
                 alert("Error: No se pudo abrir el formulario de edición. Intenta recargar la página.");
@@ -240,11 +248,10 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
-        // --- INICIALIZACIÓN DE ELEMENTOS DEL MODAL Y SUS EVENTOS (Una vez que el DOM está listo) ---
-        // Se asegura que editModal exista antes de intentar acceder a sus propiedades
+        // --- INICIALIZACIÓN DE ELEMENTOS DEL MODAL Y SUS EVENTOS ---
         const modalElement = document.getElementById("editModal");
         if (modalElement) {
-            editModal = modalElement; // Asignar a la variable de scope superior
+            editModal = modalElement;
             closeButton = editModal.querySelector(".close-button");
             editNombreInput = document.getElementById("editNombre");
             editHorasInput = document.getElementById("editHoras");
@@ -304,6 +311,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
         // Lógica para el botón de Cerrar Sesión
+        const logoutBtn = document.getElementById("logoutBtn"); // Asegurarse de obtener la referencia
         if (logoutBtn) {
             logoutBtn.addEventListener("click", async () => {
                 try {
@@ -386,6 +394,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     for (let medKey in datos) {
                         const med = datos[medKey];
 
+                        // --- CORRECCIÓN AQUÍ: DECLARAR proximaDosisEncontrada y proximaDosisTexto AQUÍ ---
+                        let proximaDosisEncontrada = null; // Declarada para todo el ámbito del bucle de medicamentos
+                        let proximaDosisTexto = "Próxima dosis: No programada"; // Declarada aquí
+                        // --- FIN CORRECCIÓN ---
+
                         const li = document.createElement("li");
                         li.classList.add("medicamento-item");
 
@@ -419,7 +432,8 @@ document.addEventListener('DOMContentLoaded', () => {
                         editBtn.textContent = "Editar";
                         editBtn.addEventListener('click', () => {
                             closeAllMenus();
-                            openEditModal(med, medKey); // openEditModal ahora está en el scope correcto
+                            // openEditModal ahora está en el scope correcto y se verifica su existencia
+                            openEditModal(med, medKey); 
                         });
                         optionsMenu.appendChild(editBtn);
 
@@ -466,8 +480,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         li.appendChild(medInfoCompartimiento);
 
                         const medInfoProximaDosis = document.createElement("p");
-                        let proximaDosisTexto = "Próxima dosis: No programada";
-
+                        // proximaDosisTexto ya declarado arriba
                         if (med.Dosis) {
                             const dosisEntries = Object.entries(med.Dosis).sort((a,b) => new Date(a[0]).getTime() - new Date(b[0]).getTime());
 
@@ -582,4 +595,4 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-}); // Cierre del document.addEventListener('DOMContentLoaded')
+}); // Cierre del document.addEventListener('DOMContentLoaded')  
