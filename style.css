@@ -285,7 +285,6 @@ ul#lista li {
     margin-top: 20px;
 }
 
-/* ... (Tu CSS existente) ... */
 
 /* Estilos para el monitoreo */
 .monitor-title {
@@ -377,7 +376,7 @@ ul#lista li {
     
 }
 
-/* Ajustes a estilos existentes si es necesario */
-ul#lista li { /* Ajustar para que no afecte .medicamento-item en monitoreo */
-    padding: 20px; /* Ajustar padding si el anterior era 50px */
-}
+/* Ajustes a estilos existentes si es necesario 
+ul#lista li { //Ajustar para que no afecte .medicamento-item en monitoreo 
+    padding: 20px; // Ajustar padding si el anterior era 50px 
+}*/
