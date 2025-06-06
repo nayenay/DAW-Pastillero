@@ -641,7 +641,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 } else {
                                     // Esto ocurriría si hay dosis pendientes, pero todas están en el pasado.
                                     proximaDosisTexto = "Próxima dosis: ¡Dosis atrasada!";
-                                    proximaDosisTexto.style.color = "salmon";
+                                    
                                     // Opcional: mostrar la dosis atrasada más próxima
                                     const firstMissedDose = dosisEntries.find(([iso, obj]) => obj.status_code === 0 && new Date(iso).getTime() < nowUtc.getTime());
                                     if (firstMissedDose) {
