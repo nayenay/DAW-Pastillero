@@ -207,6 +207,10 @@ document.addEventListener('DOMContentLoaded', () => {
                         // Calcular la siguiente toma: añadir el intervalo de horas
                         currentDoseTime.setUTCHours(currentDoseTime.getUTCHours() + horas);
                     }
+                    // --- DEBUGGING ---
+                    console.log("Dosis programadas generadas en registro:", dosisProgramadas);
+                    console.log("Número de dosis generadas:", Object.keys(dosisProgramadas).length);
+                    // --- FIN DEBUGGING ---
 
                     const data = {
                         NombreMed: nombre,
@@ -250,31 +254,38 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Función auxiliar para calcular el estado de la dosis (para monitoreo y lista)
+    // Retorna un objeto con status (0=pending, 1=on time, 2=late) y colorClass
     function getDoseStatus(scheduledTimeIso, actualTakenTimeIso) {
         const scheduledDate = new Date(scheduledTimeIso);
         const actualTakenDate = actualTakenTimeIso ? new Date(actualTakenTimeIso) : null;
         const now = new Date(); // Hora actual local
         const nowUtc = new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate(),
-                                          now.getHours(), now.getMinutes(), now.getSeconds()));
+                                          now.getHours(), now.getMinutes(), now.getSeconds())); // Hora actual UTC
 
         if (actualTakenDate) { // Si ya se tomó
             // Diferencia en milisegundos entre la toma real y la programada
-            const diffMs = Math.abs(actualTakenDate.getTime() - scheduledDate.getTime());
-            const diffHours = diffMs / (1000 * 60 * 60);
+            // Se calcula la diferencia entre la hora *programada* y la hora *real* de la toma.
+            // Si la toma real fue *antes* de la programada O hasta 1 hora *después*, es a tiempo.
+            // Más de 1 hora después, es con retraso.
+            const diffMs = actualTakenDate.getTime() - scheduledDate.getTime();
+            const diffMinutes = diffMs / (1000 * 60);
 
-            if (diffHours <= 1) { // Menos de 1 hora de diferencia
+            if (diffMinutes <= 60) { // Dentro de 60 minutos (1 hora) del tiempo programado (incluyendo si fue antes)
                 return { status: 1, colorClass: 'dosis-blue', text: 'Tomada a tiempo' };
-            } else { // Más de 1 hora de diferencia
+            } else { // Más de 60 minutos después de lo programado
                 return { status: 2, colorClass: 'dosis-purple', text: 'Tomada con retraso' };
             }
-        } else { // Si no se ha tomado
+        } else { // Si no se ha tomado (status_code es 0 en DB)
+            // Si la hora programada ya pasó, sigue siendo gris (no tomada/omitida).
+            // Si la hora programada es futura, también es gris (pendiente).
             if (scheduledDate.getTime() < nowUtc.getTime()) {
-                return { status: 0, colorClass: 'dosis-gray', text: 'Pendiente (atrasada)' }; // Dosis en el pasado
+                return { status: 0, colorClass: 'dosis-gray', text: 'Pendiente (atrasada/omitida)' }; 
             } else {
-                return { status: 0, colorClass: 'dosis-gray', text: 'Pendiente (futura)' }; // Dosis en el futuro
+                return { status: 0, colorClass: 'dosis-gray', text: 'Pendiente (futura)' }; 
             }
         }
     }
+
 
     // -------------------------------------------------------------
     // LÓGICA ESPECÍFICA PARA LISTA.HTML
@@ -362,52 +373,23 @@ document.addEventListener('DOMContentLoaded', () => {
                         const snapshot = await get(medRef);
                         const oldMedData = snapshot.val();
                         
-                        // Recalcular TODAS las dosis si cambian Horas o DosisTotal para el nuevo medicamento
-                        // Si el nombre cambia, es un medicamento nuevo. No arrastra el historial de dosis.
-                        // Para simplificar, si cambia el nombre, solo copia las propiedades básicas.
-                        const dosisProgramadasParaNuevo = {};
-                        if (newHoras === parseInt(oldMedData.Horas) && newDosisTotal === parseInt(oldMedData.DosisTotal)) {
-                            // Si solo cambia el nombre o NoCom, pero no la lógica de dosis, copiar Dosis
-                            // Esto asume que la estructura de Dosis es compatible (clave=scheduled_time)
-                            Object.assign(dosisProgramadasParaNuevo, oldMedData.Dosis); 
-                        } else {
-                            // Si horas o dosisTotal cambian, las dosis deben ser RECALCULADAS
-                            // Esto es una simplificación: idealmente se pediría una nueva "primera toma" fecha/hora
-                            // o se tomaría la primera dosis original como base. Aquí, reseteamos la programación.
-                            // Esto implica que se perdería el historial de tomas si cambian estas propiedades clave.
-                            alert("Advertencia: Al cambiar las horas o dosis total, la programación de dosis será reseteada.");
-                            // Aquí podrías añadir una lógica para pedir la primera fecha/hora del nuevo ciclo
-                            // Por ahora, solo se crea una dosis inicial si se resetea la programación.
-                            // O podríamos obligar a que la edición solo cambie el nombre o NoCom.
-                            // Por la complejidad, si cambian Horas/DosisTotal, el usuario deberá re-registrar.
-                            // O se toma la primera dosis actual como base y se recalcula a partir de ahí.
-                            // POR SIMPLICIDAD AHORA: Si cambian Horas/DosisTotal, no se arrastra el historial.
-                            // El sistema actual no tiene un input de "primera toma" en el modal de edición,
-                            // por lo que generar nuevas dosis sería arbitrario.
-                            // UNA SOLUCIÓN MÁS ROBUSTA: Abrir el formulario de registro con datos pre-rellenados,
-                            // o pedir la primera toma en el modal de edición si cambian Horas/DosisTotal.
-                            // Por ahora, no recalcular las dosis. Mantener las existentes.
-                        }
-
-
+                        // NOTA: Al cambiar el nombre, si la lógica de DosisTotal/Horas es diferente,
+                        // la estructura Dosis debería ser recalculada. Aquí, por simplicidad,
+                        // si el nombre cambia, se asume un nuevo registro y se copian las dosis existentes.
+                        // Para un sistema robusto, se debería recalcular Dosis si Horas o DosisTotal cambian.
                         const newMedData = {
                             NombreMed: newNombre,
                             Horas: newHoras.toString(),
                             NoCom: newNoCom.toString(),
                             DosisTotal: newDosisTotal.toString(),
-                            Nota: oldMedData.Nota || "", // Mantener la nota
-                            Dosis: oldMedData.Dosis || {} // Mantener las dosis existentes
+                            Nota: oldMedData.Nota || "", 
+                            Dosis: oldMedData.Dosis || {} // Mantiene las dosis existentes. Ojo: podría no ser coherente si DosisTotal/Horas cambian.
                         };
                         
                         await remove(medRef); // Eliminar el medicamento con el nombre antiguo
                         await set(ref(db, `DataBase/${user.uid}/Medicamentos/${newNombre}`), newMedData); // Guardar con el nuevo nombre
                     } else {
                         // Si el nombre no cambia, solo actualizamos los campos modificados
-                        // Si Horas o DosisTotal cambian, NO recalculamos las dosis existentes.
-                        // Esto se debe a que la lógica actual no tiene cómo determinar
-                        // la nueva primera toma para recalcular.
-                        // Para recalcular: necesitarías que el modal de edición tenga los campos de fecha/hora
-                        // y que la lógica aquí sea similar a la de registro.
                         await update(medRef, {
                             NombreMed: newNombre,
                             Horas: newHoras.toString(),
@@ -432,7 +414,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
         // Función para registrar que se tomó una dosis
-        async function registrarDosisTomada(userId, medicamentoNombre) { // Ya no necesitamos 'dosisPrevias'
+        async function registrarDosisTomada(userId, medicamentoNombre) { 
             const user = auth.currentUser;
             if (!user) {
                 alert("Debe iniciar sesión para registrar dosis.");
@@ -448,62 +430,49 @@ document.addEventListener('DOMContentLoaded', () => {
                     return;
                 }
                 const medData = snapshot.val();
-                let { Dosis, Horas, DosisTotal } = medData;
-                Horas = parseInt(Horas); 
+                let { Dosis, DosisTotal } = medData;
                 DosisTotal = parseInt(DosisTotal);
 
                 // --- Lógica para encontrar la dosis pendiente y actualizarla ---
-                let targetDoseKey = null;
-                let targetScheduledTime = null;
+                let targetScheduledIso = null; // La clave de la dosis a actualizar
 
-                const dosisEntries = Object.entries(Dosis || {}).sort((a,b) => new Date(a[0]).getTime() - new Date(b[0]).getTime()); // Ordenar por fecha programada
+                // Obtener todas las dosis y ordenarlas por tiempo programado
+                const dosisEntries = Object.entries(Dosis || {}).sort((a,b) => new Date(a[0]).getTime() - new Date(b[0]).getTime()); 
                 const now = new Date(); // Hora actual de la toma
                 const nowUtc = new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate(),
                                                   now.getHours(), now.getMinutes(), now.getSeconds())); // Hora actual UTC
 
-                // Encontrar la primera dosis pendiente cuyo tiempo programado sea pasado o actual
+                // Buscar la primera dosis pendiente (status_code: 0) que sea la "siguiente" a tomar
+                // Esto es, la más antigua que no se haya tomado, o la primera futura si todas las pasadas ya se tomaron.
                 for (const [scheduledIso, doseObj] of dosisEntries) {
                     if (doseObj.status_code === 0) { // Si está pendiente
-                        const scheduledDate = new Date(scheduledIso);
-                        if (scheduledDate.getTime() <= nowUtc.getTime() + (5 * 60 * 1000)) { // Dar un margen de 5 min para "a tiempo" en dosis pasadas/actuales
-                            targetDoseKey = scheduledIso;
-                            targetScheduledTime = scheduledDate;
-                            break;
-                        }
-                    }
-                }
-
-                // Si no se encontró una dosis pendiente que sea pasada/actual, buscar la primera futura pendiente
-                if (!targetDoseKey) {
-                    for (const [scheduledIso, doseObj] of dosisEntries) {
-                        if (doseObj.status_code === 0) {
-                            const scheduledDate = new Date(scheduledIso);
-                            if (scheduledDate.getTime() > nowUtc.getTime()) {
-                                targetDoseKey = scheduledIso;
-                                targetScheduledTime = scheduledDate;
-                                break;
-                            }
-                        }
+                        targetScheduledIso = scheduledIso;
+                        break; // Encontramos la primera pendiente
                     }
                 }
                 
-                // Si no hay ninguna dosis pendiente (todas tomadas o no hay), salir
-                if (!targetDoseKey) {
-                    if (Object.keys(Dosis).length >= DosisTotal) { // Todas las dosis ya están registradas como tomadas
+                // Si no se encontró ninguna dosis pendiente, puede que todas se hayan tomado
+                if (!targetScheduledIso) {
+                    const dosesTakenCount = Object.values(Dosis).filter(d => d.status_code === 1 || d.status_code === 2).length;
+                    if (dosesTakenCount >= DosisTotal) {
                          alert("Todas las dosis de " + medicamentoNombre + " ya han sido registradas.");
                     } else {
-                         // Esto no debería pasar si DosisTotal se precalcula.
+                         // Esto no debería pasar si DosisTotal se precalcula y no todas han sido tomadas.
                          alert("No se encontró una dosis pendiente para registrar.");
                     }
                     return;
                 }
 
+                // Obtener el objeto de la dosis a actualizar
+                const targetDoseObj = Dosis[targetScheduledIso];
+                const scheduledDate = new Date(targetDoseObj.scheduled);
+
                 // Determinar el status_code (1: a tiempo, 2: retraso)
                 let newStatusCode = 0;
-                const diffMs = Math.abs(nowUtc.getTime() - targetScheduledTime.getTime());
+                const diffMs = nowUtc.getTime() - scheduledDate.getTime(); // Diferencia entre toma real y programada
                 const diffMinutes = diffMs / (1000 * 60);
 
-                if (diffMinutes <= 60) { // Tomada dentro de 1 hora de la programada
+                if (diffMinutes <= 60) { // Tomada dentro de 60 minutos (1 hora) después de lo programado (o antes)
                     newStatusCode = 1; // A tiempo
                 } else {
                     newStatusCode = 2; // Con retraso
@@ -511,7 +480,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 // Construir las actualizaciones
                 const updates = {};
-                const dosePath = `/DataBase/${userId}/Medicamentos/${medicamentoNombre}/Dosis/${targetDoseKey}`;
+                const dosePath = `DataBase/${userId}/Medicamentos/${medicamentoNombre}/Dosis/${targetScheduledIso}`;
                 updates[dosePath + '/taken_at'] = nowUtc.toISOString().substring(0, 19) + 'Z';
                 updates[dosePath + '/status_code'] = newStatusCode;
                 
@@ -648,10 +617,10 @@ document.addEventListener('DOMContentLoaded', () => {
                             const dosisEntries = Object.entries(med.Dosis).sort((a,b) => new Date(a[0]).getTime() - new Date(b[0]).getTime()); // Ordenar por fecha programada
                             let proximaDosisEncontrada = null;
 
-                            // Buscar la primera dosis pendiente (status_code: 0) cuyo scheduled time es futuro o actual
+                            // Buscar la primera dosis pendiente (status_code: 0) cuyo scheduled time sea futuro o actual
                             for (const [scheduledIso, doseObj] of dosisEntries) {
                                 const scheduledDate = new Date(scheduledIso);
-                                if (doseObj.status_code === 0 && scheduledDate.getTime() >= nowUtc.getTime()) {
+                                if (doseObj.status_code === 0 && scheduledDate.getTime() >= nowUtc.getTime() - (5 * 60 * 1000)) { // Dar 5 min de margen
                                     proximaDosisEncontrada = scheduledDate;
                                     break;
                                 }
@@ -721,7 +690,7 @@ document.addEventListener('DOMContentLoaded', () => {
     } // Cierre del if (isListaPage)
 
     // -------------------------------------------------------------
-    // LÓGICA ESPECÍFICA PARA MONITOREO.HTML (NUEVO)
+    // LÓGICA ESPECÍFICA PARA MONITOREO.HTML
     // -------------------------------------------------------------
     if (isMonitoreoPage) {
         const monitoreoContainer = document.getElementById("monitoreo-lista"); // Asume un ul/div en monitoreo.html
@@ -741,12 +710,17 @@ document.addEventListener('DOMContentLoaded', () => {
                 const snapshot = await get(medRef);
                 if (snapshot.exists()) {
                     const medicamentos = snapshot.val();
-                    const now = new Date(); // Hora actual local
-                    const nowUtc = new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate(),
-                                                      now.getHours(), now.getMinutes(), now.getSeconds())); // Hora actual UTC
+                    // const now = new Date(); // Ya se obtiene en getDoseStatus
+                    // const nowUtc = new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate(),
+                    //                                   now.getHours(), now.getMinutes(), now.getSeconds())); // Ya se obtiene en getDoseStatus
 
                     for (let medKey in medicamentos) {
                         const med = medicamentos[medKey];
+                        // --- DEBUGGING ---
+                        console.log(`Monitoreando ${med.NombreMed}. DosisTotal: ${med.DosisTotal}`);
+                        console.log(`Dosis en DB para ${med.NombreMed}:`, med.Dosis);
+                        console.log(`Número de entradas en Dosis:`, med.Dosis ? Object.keys(med.Dosis).length : 0);
+                        // --- FIN DEBUGGING ---
 
                         const medItemDiv = document.createElement("div");
                         medItemDiv.classList.add("medicamento-container"); // Usar clase de estilo de monitoreo
@@ -767,15 +741,17 @@ document.addEventListener('DOMContentLoaded', () => {
                                 const dosisCircle = document.createElement("div");
                                 dosisCircle.classList.add("dosis-circle");
 
+                                // Usar la función auxiliar para determinar el color
                                 const { colorClass, text } = getDoseStatus(scheduledIso, doseObj.taken_at);
                                 dosisCircle.classList.add(colorClass);
-                                dosisCircle.title = `${med.NombreMed} - Programada: ${new Date(scheduledIso).toLocaleString()} - ${text}`; // Tooltip
+                                // Tooltip para más información
+                                dosisCircle.title = `${med.NombreMed}\nProgramada: ${new Date(scheduledIso).toLocaleString()}\nEstado: ${text}`; 
 
                                 dosisRow.appendChild(dosisCircle);
                             }
                         } else {
                             const noDosesText = document.createElement('p');
-                            noDosesText.textContent = 'No hay dosis programadas.';
+                            noDosesText.textContent = 'No hay dosis programadas para este medicamento.';
                             dosisRow.appendChild(noDosesText);
                         }
                         
