@@ -290,3 +290,96 @@ ul#lista li {
     width: 100%;
     margin-top: 20px;
 }
+
+/* ... (Tu CSS existente) ... */
+
+/* Estilos para el monitoreo */
+.monitor-title {
+    font-family: 'Lexend';
+    color: #dfc2ff;
+    text-align: center;
+    margin-bottom: 20px;
+    font-size: 35px;
+}
+
+.medicamento-container { /* Reutiliza la clase de lista pero con diferentes paddings/margins */
+    background-color: rgb(30 49 143 / 50%); /* Fondo semi-transparente similar */
+    color: #ffffff;
+    padding: 20px;
+    margin: 15px auto; /* Centrar y margen vertical */
+    border-radius: 10px;
+    box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.3);
+    width: 90%;
+    max-width: 600px; /* Un poco más ancho para los círculos */
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start; /* Alinear contenido a la izquierda */
+}
+
+.medicamento-title {
+    font-size: 1.8em;
+    margin-bottom: 15px;
+    color: #99fdff; /* Color para el título del medicamento */
+    font-family: 'Lexend';
+}
+
+.dosis-row {
+    display: flex;
+    flex-wrap: wrap; /* Para que los círculos se envuelvan si hay muchos */
+    gap: 10px; /* Espacio entre círculos */
+    margin-top: 10px;
+}
+
+.dosis-circle {
+    width: 25px; /* Tamaño del círculo */
+    height: 25px;
+    border-radius: 50%; /* Hacerlo redondo */
+    border: 1px solid rgba(255, 255, 255, 0.3); /* Borde claro */
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
+    cursor: help; /* Para indicar que tienen tooltip */
+}
+
+/* Colores de los círculos */
+.dosis-blue {
+    background-color: #007bff; /* Azul vibrante */
+}
+
+.dosis-purple {
+    background-color: #800080; /* Morado */
+}
+
+.dosis-gray {
+    background-color: #6c757d; /* Gris oscuro */
+}
+
+/* Enlaces de navegación en la página de monitoreo */
+.navigation-links {
+    text-align: center;
+    margin-top: 20px;
+    padding: 10px;
+    background-color: rgb(30 49 143 / 50%);
+    border-radius: 8px;
+    width: 90%;
+    max-width: 600px;
+}
+
+.navigation-links a {
+    display: inline-block;
+    margin: 0 10px;
+    padding: 8px 15px;
+    background-color: #b55fca;
+    color: white;
+    border-radius: 5px;
+    text-decoration: none;
+    transition: background-color 0.3s ease;
+}
+
+.navigation-links a:hover {
+    background-color: #6b267c;
+    text-decoration: none;
+}
+
+/* Ajustes a estilos existentes si es necesario */
+ul#lista li { /* Ajustar para que no afecte .medicamento-item en monitoreo */
+    padding: 20px; /* Ajustar padding si el anterior era 50px */
+}
