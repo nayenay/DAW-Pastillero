@@ -1,36 +1,20 @@
 <!DOCTYPE html>
 <html>
 <head>
+  <link rel="stylesheet" href="style.css">
   <title>Login</title>
-</head>
+  </head>
 <body>
-  <h2>Iniciar sesión</h2>
+  <h2>Iniciar sesión15</h2>
   <input type="email" id="email" placeholder="Correo"><br>
   <input type="password" id="password" placeholder="Contraseña"><br>
   <button id="loginBtn">Iniciar Sesión</button>
   <button id="registerBtn">Registrarse</button>
 
-  <script type="module" src="main.js">
-    import { auth } from './firebase-config.js';
-    import { signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js';
 
-    document.getElementById("loginBtn").addEventListener("click", () => {
-      const email = document.getElementById("email").value;
-      const password = document.getElementById("password").value;
 
-      signInWithEmailAndPassword(auth, email, password)
-        .then(() => window.location.href = "registro.html")
-        .catch(err => alert("Error al iniciar sesión: " + err.message));
-    });
 
-    document.getElementById("registerBtn").addEventListener("click", () => {
-      const email = document.getElementById("email").value;
-      const password = document.getElementById("password").value;
 
-      createUserWithEmailAndPassword(auth, email, password)
-        .then(() => alert("Registrado con éxito"))
-        .catch(err => alert("Error al registrarse: " + err.message));
-    });
-  </script>
+  <script type="module" src="script.js"></script>
 </body>
 </html>
