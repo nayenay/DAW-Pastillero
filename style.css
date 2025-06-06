@@ -126,7 +126,8 @@ ul#lista li {
   background-color: #6dd7bc66;
   color: white;
   margin: 5px 0;
-  padding-inline: 80px;
+  padding-inline-start: 50px;
+  padding-inline-end: 100px;
   border-radius: 5px;
 }
 
