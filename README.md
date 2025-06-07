@@ -12,7 +12,7 @@
 - [Lista de medicamentos (lista.html)](https://github.com/nayenay/DAW-Pastillero/blob/main/lista.html)
 - [Registro de medicamentos (registro.html)](https://github.com/nayenay/DAW-Pastillero/blob/main/registro.html)
 - [Edición (editar.html)](https://github.com/nayenay/DAW-Pastillero/blob/main/editar.html)
-- [Monitoreo de dosis (monitoreo.html)] (https://github.com/nayenay/DAW-Pastillero/blob/main/monitoreo.html).
+- [Monitoreo de dosis (monitoreo.html)](https://github.com/nayenay/DAW-Pastillero/blob/main/monitoreo.html).
 
 🎨 Estilo de la página web
 - [Hoja de estilos (style.css)](https://github.com/nayenay/DAW-Pastillero/blob/main/style.css)
